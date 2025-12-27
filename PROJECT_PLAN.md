@@ -155,17 +155,17 @@ ourea/
 
 #### 1.1 环境搭建
 
-- [ ] **T1.1.1** 安装 Tauri CLI
+- [x] **T1.1.1** 安装 Tauri CLI
   ```bash
   cargo install tauri-cli --version "^2.0.0"
   ```
 
-- [ ] **T1.1.2** 创建 Tauri + Vue 项目
+- [x] **T1.1.2** 创建 Tauri + Vue 项目
   ```bash
   npm create tauri-app@latest ourea -- --template vue-ts
   ```
 
-- [ ] **T1.1.3** 安装前端依赖
+- [x] **T1.1.3** 安装前端依赖
   ```bash
   npm install @milkdown/kit @milkdown/core @milkdown/ctx @milkdown/prose
   npm install @milkdown/preset-commonmark @milkdown/preset-gfm
@@ -178,33 +178,33 @@ ourea/
   npm install -D tailwindcss postcss autoprefixer
   ```
 
-- [ ] **T1.1.4** 配置 TailwindCSS
+- [x] **T1.1.4** 配置 TailwindCSS
   - 创建 `tailwind.config.js`
   - 配置 `postcss.config.js`
   - 在 `main.css` 中引入 Tailwind 指令
 
-- [ ] **T1.1.5** 配置 TypeScript
+- [x] **T1.1.5** 配置 TypeScript
   - 更新 `tsconfig.json` 路径别名
   - 配置严格模式
 
 #### 1.2 Tauri 配置
 
-- [ ] **T1.2.1** 配置 `tauri.conf.json`
+- [x] **T1.2.1** 配置 `tauri.conf.json`
   - 设置应用名称、版本、标识符
   - 配置窗口属性（大小、标题、装饰）
   - 配置安全策略（CSP）
 
-- [ ] **T1.2.2** 配置应用权限 `capabilities/`
+- [x] **T1.2.2** 配置应用权限 `capabilities/`
   - 文件系统读写权限
   - 对话框权限
   - Shell 权限
   - 剪贴板权限
 
-- [ ] **T1.2.3** 设计应用图标
+- [x] **T1.2.3** 设计应用图标
   - 创建 1024x1024 源图标
   - 使用 `tauri icon` 生成各平台图标
 
-- [ ] **T1.2.4** 配置 Rust 依赖 `Cargo.toml`
+- [x] **T1.2.4** 配置 Rust 依赖 `Cargo.toml`
   ```toml
   [dependencies]
   tauri = { version = "2", features = ["devtools"] }
@@ -225,32 +225,34 @@ ourea/
 
 #### 1.3 基础布局实现
 
-- [ ] **T1.3.1** 创建自定义标题栏 `TitleBar.vue`
+- [x] **T1.3.1** 创建自定义标题栏 `TitleBar.vue`
   - 实现窗口拖拽区域
-  - 实现最小化/最大化/关闭按钮
-  - macOS 红绿灯按钮适配
-  - 显示当前文件名
+  - ~~实现最小化/最大化/关闭按钮~~ (使用系统原生按钮)
+  - ~~macOS 红绿灯按钮适配~~ (使用系统原生按钮)
+  - 显示当前文件名（通过标签页）
 
-- [ ] **T1.3.2** 创建主布局 `MainLayout.vue`
-  - 三栏布局：侧边栏 + 编辑区 + 预览区（可选）
+- [x] **T1.3.2** 创建主布局 `MainLayout.vue`
+  - 三栏布局：侧边栏 + 编辑区 + 大纲区
   - 响应式布局适配
-  - 布局状态持久化
+  - ~~布局状态持久化~~ (待实现)
 
-- [ ] **T1.3.3** 创建侧边栏 `Sidebar.vue`
-  - 文件树组件
-  - 文件夹展开/折叠
-  - 文件拖拽排序
-  - 右键菜单
+- [x] **T1.3.3** 创建侧边栏 `Sidebar.vue` (部分完成)
+  - ~~文件树组件~~ (待实现)
+  - ~~文件夹展开/折叠~~ (待实现)
+  - ~~文件拖拽排序~~ (待实现)
+  - ~~右键菜单~~ (待实现)
+  - [x] 最近文件列表
+  - [x] 新建/打开文件按钮
 
-- [ ] **T1.3.4** 创建状态栏 `StatusBar.vue`
-  - 字数统计
-  - 行数/列数显示
-  - 编码显示
-  - 保存状态
+- [x] **T1.3.4** 创建状态栏 `StatusBar.vue` (部分完成)
+  - [x] 字数统计
+  - ~~行数/列数显示~~ (待实现)
+  - [x] 编码显示
+  - ~~保存状态~~ (待实现)
 
 #### 1.4 状态管理设置
 
-- [ ] **T1.4.1** 创建 Pinia Store - `editor.ts`
+- [x] **T1.4.1** 创建 Pinia Store - `editor.ts`
   ```typescript
   - editorContent: string      // 当前内容
   - isDirty: boolean           // 是否有未保存更改
@@ -259,7 +261,7 @@ ourea/
   - cursorPosition: Position   // 光标位置
   ```
 
-- [ ] **T1.4.2** 创建 Pinia Store - `file.ts`
+- [x] **T1.4.2** 创建 Pinia Store - `file.ts`
   ```typescript
   - currentFilePath: string    // 当前文件路径
   - currentFileName: string    // 当前文件名
@@ -267,7 +269,7 @@ ourea/
   - isNewFile: boolean         // 是否为新建文件
   ```
 
-- [ ] **T1.4.3** 创建 Pinia Store - `settings.ts`
+- [x] **T1.4.3** 创建 Pinia Store - `settings.ts`
   ```typescript
   - theme: 'light' | 'dark' | 'system'
   - fontSize: number
@@ -279,12 +281,19 @@ ourea/
   - showLineNumbers: boolean
   ```
 
-- [ ] **T1.4.4** 创建 Pinia Store - `ui.ts`
+- [x] **T1.4.4** 创建 Pinia Store - `ui.ts` (合并到 settings.ts)
   ```typescript
   - sidebarVisible: boolean
   - sidebarWidth: number
   - focusMode: boolean
   - typewriterMode: boolean
+  ```
+
+- [x] **T1.4.5** 创建 Pinia Store - `tabs.ts` (额外实现)
+  ```typescript
+  - tabs: Tab[]                // 标签页列表
+  - activeTabId: string        // 当前激活的标签页
+  - isDirty: boolean           // 每个标签页的脏状态
   ```
 
 ---
@@ -293,42 +302,42 @@ ourea/
 
 #### 2.1 Milkdown 编辑器集成
 
-- [ ] **T2.1.1** 创建基础编辑器组件 `MilkdownEditor.vue`
+- [x] **T2.1.1** 创建基础编辑器组件 `MilkdownEditor.vue`
   - 初始化 Milkdown Editor 实例
   - 配置基础插件
   - 处理编辑器生命周期
 
-- [ ] **T2.1.2** 集成 CommonMark 预设
+- [x] **T2.1.2** 集成 CommonMark 预设
   ```typescript
   import { commonmark } from '@milkdown/preset-commonmark'
   // 支持：标题、段落、列表、引用、代码块、链接、图片、加粗、斜体
   ```
 
-- [ ] **T2.1.3** 集成 GFM 预设
+- [x] **T2.1.3** 集成 GFM 预设
   ```typescript
   import { gfm } from '@milkdown/preset-gfm'
   // 支持：表格、任务列表、删除线、自动链接
   ```
 
-- [ ] **T2.1.4** 集成历史记录插件
+- [x] **T2.1.4** 集成历史记录插件
   ```typescript
   import { history } from '@milkdown/plugin-history'
   // 支持：撤销 (Cmd/Ctrl+Z)、重做 (Cmd/Ctrl+Shift+Z)
   ```
 
-- [ ] **T2.1.5** 集成剪贴板插件
+- [x] **T2.1.5** 集成剪贴板插件
   ```typescript
   import { clipboard } from '@milkdown/plugin-clipboard'
   // 支持：Markdown 格式复制粘贴
   ```
 
-- [ ] **T2.1.6** 集成光标插件
+- [x] **T2.1.6** 集成光标插件
   ```typescript
   import { cursor } from '@milkdown/plugin-cursor'
   // 支持：拖放光标、间隙光标
   ```
 
-- [ ] **T2.1.7** 集成监听器插件
+- [x] **T2.1.7** 集成监听器插件
   ```typescript
   import { listener, listenerCtx } from '@milkdown/plugin-listener'
   // 用于监听内容变化、更新状态
@@ -336,7 +345,7 @@ ourea/
 
 #### 2.2 编辑器增强功能
 
-- [ ] **T2.2.1** 集成缩进插件
+- [x] **T2.2.1** 集成缩进插件
   ```typescript
   import { indent } from '@milkdown/plugin-indent'
   // 支持：Tab 缩进、Shift+Tab 反缩进
@@ -380,23 +389,23 @@ ourea/
 
 #### 2.3 内容同步与状态
 
-- [ ] **T2.3.1** 实现内容变化监听
+- [x] **T2.3.1** 实现内容变化监听
   - 监听 Milkdown 内容变化事件
   - 同步到 Pinia store
   - 更新 dirty 状态
 
-- [ ] **T2.3.2** 实现字数统计
-  - 实时统计字数
-  - 统计字符数（含/不含空格）
-  - 统计段落数
-  - 统计阅读时间
+- [x] **T2.3.2** 实现字数统计 (部分完成)
+  - [x] 实时统计字数
+  - [x] 统计字符数（含/不含空格）
+  - ~~统计段落数~~ (待实现)
+  - ~~统计阅读时间~~ (待实现)
 
 - [ ] **T2.3.3** 实现光标位置追踪
   - 获取当前行号
   - 获取当前列号
   - 更新状态栏显示
 
-- [ ] **T2.3.4** 实现内容获取/设置
+- [x] **T2.3.4** 实现内容获取/设置
   ```typescript
   // 获取 Markdown 内容
   function getMarkdown(): string
@@ -441,7 +450,7 @@ ourea/
 
 #### 3.1 Rust 文件服务
 
-- [ ] **T3.1.1** 创建文件操作命令 `commands/file.rs`
+- [x] **T3.1.1** 创建文件操作命令 `commands/file.rs`
   ```rust
   #[tauri::command]
   async fn read_file(path: &str) -> Result<String, Error>
@@ -456,28 +465,18 @@ ourea/
   async fn get_file_info(path: &str) -> Result<FileInfo, Error>
   ```
 
-- [ ] **T3.1.2** 实现文件对话框命令
+- [x] **T3.1.2** 实现文件对话框命令 (使用 Tauri 前端插件实现)
   ```rust
-  #[tauri::command]
-  async fn open_file_dialog() -> Result<Option<String>, Error>
-
-  #[tauri::command]
-  async fn save_file_dialog(default_name: &str) -> Result<Option<String>, Error>
-
-  #[tauri::command]
-  async fn select_folder_dialog() -> Result<Option<String>, Error>
+  // 使用 @tauri-apps/plugin-dialog 前端 API
+  // open(), save() 等
   ```
 
-- [ ] **T3.1.3** 实现最近文件管理
-  ```rust
-  #[tauri::command]
-  fn get_recent_files() -> Vec<RecentFile>
-
-  #[tauri::command]
-  fn add_recent_file(path: &str, name: &str)
-
-  #[tauri::command]
-  fn clear_recent_files()
+- [x] **T3.1.3** 实现最近文件管理 (在前端 file.ts store 中实现)
+  ```typescript
+  // 在 Pinia store 中管理最近文件
+  addToRecentFiles(path: string)
+  removeRecentFile(path: string)
+  clearRecentFiles()
   ```
 
 - [ ] **T3.1.4** 实现文件监听服务
@@ -488,7 +487,7 @@ ourea/
 
 #### 3.2 前端文件操作
 
-- [ ] **T3.2.1** 创建文件操作 composable `useFile.ts`
+- [x] **T3.2.1** 创建文件操作 composable `useFile.ts`
   ```typescript
   function newFile()           // 新建文件
   function openFile()          // 打开文件
@@ -497,33 +496,33 @@ ourea/
   function closeFile()         // 关闭文件
   ```
 
-- [ ] **T3.2.2** 实现新建文件功能
-  - 检查当前文件是否需要保存
-  - 清空编辑器内容
+- [x] **T3.2.2** 实现新建文件功能
+  - ~~检查当前文件是否需要保存~~ (多标签页模式)
+  - 创建新标签页
   - 重置文件状态
 
-- [ ] **T3.2.3** 实现打开文件功能
+- [x] **T3.2.3** 实现打开文件功能
   - 弹出文件选择对话框
   - 过滤 .md/.markdown 文件
   - 读取文件内容
-  - 加载到编辑器
+  - 加载到编辑器（新标签页）
   - 更新文件状态
   - 添加到最近文件
 
-- [ ] **T3.2.4** 实现保存文件功能
+- [x] **T3.2.4** 实现保存文件功能
   - 获取编辑器内容
   - 如果是新文件，弹出保存对话框
   - 写入文件
   - 更新保存状态
 
-- [ ] **T3.2.5** 实现另存为功能
+- [x] **T3.2.5** 实现另存为功能
   - 弹出保存对话框
   - 保存到新路径
   - 更新当前文件路径
 
-- [ ] **T3.2.6** 实现关闭文件确认
+- [x] **T3.2.6** 实现关闭文件确认
   - 检查未保存更改
-  - 弹出确认对话框
+  - 弹出确认对话框 (CloseConfirmDialog.vue)
   - 保存/不保存/取消选项
 
 #### 3.3 文件树功能
@@ -553,20 +552,20 @@ ourea/
 
 #### 3.4 自动保存
 
-- [ ] **T3.4.1** 创建自动保存 composable `useAutoSave.ts`
+- [x] **T3.4.1** 创建自动保存 composable `useAutoSave.ts`
   - 可配置的保存间隔
   - 仅在有更改时保存
-  - 保存状态指示
+  - ~~保存状态指示~~ (待实现)
 
-- [ ] **T3.4.2** 实现定时自动保存
+- [x] **T3.4.2** 实现定时自动保存
   ```typescript
   // 默认每 30 秒检查并保存
   // 用户可在设置中调整间隔
   ```
 
-- [ ] **T3.4.3** 实现失焦自动保存
+- [x] **T3.4.3** 实现失焦自动保存
   - 窗口失去焦点时保存
-  - 切换文件时保存
+  - ~~切换文件时保存~~ (多标签页模式不需要)
 
 - [ ] **T3.4.4** 实现崩溃恢复
   - 定期保存到临时文件
@@ -685,20 +684,20 @@ ourea/
 
 #### 4.6 目录大纲
 
-- [ ] **T4.6.1** 创建目录组件 `TableOfContents.vue`
+- [x] **T4.6.1** 创建目录组件 `Outline.vue` (原计划名为 TableOfContents.vue)
   - 自动提取标题
   - 层级缩进显示
   - 实时更新
 
-- [ ] **T4.6.2** 实现目录导航
+- [x] **T4.6.2** 实现目录导航
   - 点击跳转到标题
-  - 当前位置高亮
+  - ~~当前位置高亮~~ (待实现)
   - 平滑滚动
 
-- [ ] **T4.6.3** 实现目录面板
-  - 可折叠面板
-  - 可调整宽度
-  - 可拖拽排序（可选）
+- [x] **T4.6.3** 实现目录面板
+  - 可折叠面板（通过 TitleBar 切换按钮）
+  - 可调整宽度（拖拽调整）
+  - ~~可拖拽排序~~ (不需要)
 
 ---
 
@@ -706,23 +705,23 @@ ourea/
 
 #### 5.1 主题系统
 
-- [ ] **T5.1.1** 创建主题 composable `useTheme.ts`
+- [x] **T5.1.1** 创建主题 composable `useTheme.ts`
   - 亮色/暗色/跟随系统
   - 主题切换动画
-  - 主题持久化
+  - ~~主题持久化~~ (待实现)
 
-- [ ] **T5.1.2** 设计亮色主题
+- [x] **T5.1.2** 设计亮色主题
   - 编辑器样式
   - 侧边栏样式
-  - 工具栏样式
+  - ~~工具栏样式~~ (工具栏未实现)
   - 对话框样式
 
-- [ ] **T5.1.3** 设计暗色主题
+- [x] **T5.1.3** 设计暗色主题
   - 编辑器暗色样式
-  - 代码高亮暗色配色
+  - ~~代码高亮暗色配色~~ (代码高亮未实现)
   - 统一色彩系统
 
-- [ ] **T5.1.4** 实现系统主题跟随
+- [x] **T5.1.4** 实现系统主题跟随
   - 监听系统主题变化
   - 自动切换主题
 
@@ -733,12 +732,12 @@ ourea/
 
 #### 5.2 快捷键系统
 
-- [ ] **T5.2.1** 创建快捷键 composable `useShortcuts.ts`
+- [x] **T5.2.1** 创建快捷键 composable `useShortcuts.ts`
   - 快捷键注册
-  - 快捷键冲突处理
+  - ~~快捷键冲突处理~~ (待实现)
   - 平台适配（Mac/Windows）
 
-- [ ] **T5.2.2** 实现文件快捷键
+- [x] **T5.2.2** 实现文件快捷键
   ```
   Cmd/Ctrl + N    新建文件
   Cmd/Ctrl + O    打开文件
@@ -747,7 +746,7 @@ ourea/
   Cmd/Ctrl + W    关闭文件
   ```
 
-- [ ] **T5.2.3** 实现编辑快捷键
+- [x] **T5.2.3** 实现编辑快捷键 (由 Milkdown 提供)
   ```
   Cmd/Ctrl + Z    撤销
   Cmd/Ctrl + Shift + Z    重做
@@ -766,14 +765,14 @@ ourea/
   Cmd/Ctrl + 1-6    标题 1-6
   ```
 
-- [ ] **T5.2.5** 实现视图快捷键
+- [x] **T5.2.5** 实现视图快捷键 (部分完成)
   ```
   Cmd/Ctrl + \    切换侧边栏
-  Cmd/Ctrl + Shift + L    切换目录
+  ~~Cmd/Ctrl + Shift + L    切换目录~~ (待实现)
   Cmd/Ctrl + +    放大字体
   Cmd/Ctrl + -    缩小字体
   Cmd/Ctrl + 0    重置字体
-  F11    全屏
+  ~~F11    全屏~~ (待实现)
   ```
 
 - [ ] **T5.2.6** 实现快捷键自定义（可选）
