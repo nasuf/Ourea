@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useMilkdown } from "@/composables/useMilkdown";
 import { useTabsStore } from "@/stores/tabs";
+import { registerEditorCommandHandler, unregisterEditorCommandHandler } from "@/composables/useEditorCommands";
 import CodeEditor from "./CodeEditor.vue";
 
 const tabsStore = useTabsStore();
@@ -87,6 +88,18 @@ onMounted(async () => {
   // Small delay to ensure DOM is ready
   await nextTick();
   await initEditorIfNeeded();
+
+  // Register command handler for global shortcuts
+  registerEditorCommandHandler((command: string, payload?: any) => {
+    if (isMarkdownMode.value && isReady.value) {
+      return executeCommand(command, payload);
+    }
+    return false;
+  });
+});
+
+onUnmounted(() => {
+  unregisterEditorCommandHandler();
 });
 </script>
 
@@ -361,5 +374,47 @@ onMounted(async () => {
   pointer-events: none;
   float: left;
   height: 0;
+}
+
+/* Typewriter mode - keep cursor line vertically centered */
+.typewriter-mode .milkdown .ProseMirror {
+  padding-top: 40vh;
+  padding-bottom: 40vh;
+}
+
+.typewriter-mode .editor-wrapper {
+  scroll-behavior: smooth;
+}
+
+/* Paragraph focus mode - fade non-focused paragraphs */
+.paragraph-focus .milkdown .ProseMirror > * {
+  opacity: var(--paragraph-focus-opacity, 0.3);
+  transition: opacity 0.2s ease;
+}
+
+.paragraph-focus .milkdown .ProseMirror > *:focus-within,
+.paragraph-focus .milkdown .ProseMirror > *.ProseMirror-selectednode,
+.paragraph-focus .milkdown .ProseMirror > *:has(.ProseMirror-gapcursor) {
+  opacity: 1;
+}
+
+/* For browsers that don't support :has(), target the currently edited element */
+.paragraph-focus .milkdown .ProseMirror > p:focus,
+.paragraph-focus .milkdown .ProseMirror > h1:focus,
+.paragraph-focus .milkdown .ProseMirror > h2:focus,
+.paragraph-focus .milkdown .ProseMirror > h3:focus,
+.paragraph-focus .milkdown .ProseMirror > h4:focus,
+.paragraph-focus .milkdown .ProseMirror > h5:focus,
+.paragraph-focus .milkdown .ProseMirror > h6:focus,
+.paragraph-focus .milkdown .ProseMirror > blockquote:focus,
+.paragraph-focus .milkdown .ProseMirror > pre:focus,
+.paragraph-focus .milkdown .ProseMirror > ul:focus,
+.paragraph-focus .milkdown .ProseMirror > ol:focus {
+  opacity: 1;
+}
+
+/* Focus mode transitions */
+.focus-mode .milkdown {
+  transition: padding 0.3s ease;
 }
 </style>

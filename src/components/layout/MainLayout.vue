@@ -11,12 +11,18 @@ import EmptyState from "../editor/EmptyState.vue";
 import SearchDialog from "../dialogs/SearchDialog.vue";
 import FormulaDialog from "../dialogs/FormulaDialog.vue";
 import ImageManagerDialog from "../dialogs/ImageManagerDialog.vue";
+import SettingsDialog from "../dialogs/SettingsDialog.vue";
 import { useTabsStore } from "@/stores/tabs";
+import { useSettingsStore } from "@/stores/settings";
 import { useFile } from "@/composables/useFile";
 import { useGlobalSearch } from "@/composables/useSearch";
 
 const tabsStore = useTabsStore();
+const settingsStore = useSettingsStore();
 const { openFile } = useFile();
+
+// Detect platform
+const isMac = navigator.platform.toLowerCase().includes("mac");
 const {
   isSearchOpen,
   closeSearch,
@@ -61,6 +67,15 @@ function openImageManager() {
 
 function closeImageManager() {
   isImageManagerVisible.value = false;
+}
+
+// Settings dialog state - use store for global access
+function openSettings() {
+  settingsStore.openSettingsDialog();
+}
+
+function closeSettings() {
+  settingsStore.closeSettingsDialog();
 }
 
 // Handle search events
@@ -131,6 +146,7 @@ const toggleOutline = () => {
 // Provide outline state to TitleBar
 provide("outlineVisible", outlineVisible);
 provide("toggleOutline", toggleOutline);
+provide("openSettings", openSettings);
 
 // Editor ref for toolbar commands
 const editorRef = ref<InstanceType<typeof MilkdownEditor> | null>(null);
@@ -224,25 +240,39 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="main-layout" :class="{ 'is-dragging': isDragging }">
-    <TitleBar @toggle-sidebar="toggleSidebar" />
+  <div
+    class="main-layout"
+    :class="{
+      'is-dragging': isDragging,
+      'focus-mode': settingsStore.focusMode,
+      'typewriter-mode': settingsStore.typewriterMode,
+      'paragraph-focus': settingsStore.paragraphFocus,
+    }"
+    :style="{ '--paragraph-focus-opacity': settingsStore.paragraphFocusOpacity }"
+  >
+    <TitleBar v-show="!settingsStore.focusMode" @toggle-sidebar="toggleSidebar" />
 
     <div class="content-area">
-      <Sidebar v-show="sidebarVisible" :width="sidebarWidth" />
+      <Sidebar v-show="sidebarVisible && !settingsStore.focusMode" :width="sidebarWidth" />
 
       <main class="editor-area">
-        <EditorToolbar v-if="hasOpenTabs" @command="handleToolbarCommand" />
+        <EditorToolbar v-if="hasOpenTabs && !settingsStore.focusMode" @command="handleToolbarCommand" />
         <MilkdownEditor v-if="hasOpenTabs" ref="editorRef" />
         <EmptyState v-else />
       </main>
 
       <Outline
-        v-if="hasOpenTabs && outlineVisible"
+        v-if="hasOpenTabs && outlineVisible && !settingsStore.focusMode"
         v-model:width="outlineWidth"
       />
     </div>
 
-    <StatusBar v-if="hasOpenTabs" />
+    <StatusBar v-if="hasOpenTabs && !settingsStore.focusMode" />
+
+    <!-- Focus mode exit hint -->
+    <div v-if="settingsStore.focusMode" class="focus-mode-hint">
+      Press <kbd>ESC</kbd> or <kbd>{{ isMac ? '⌘' : 'Ctrl' }}+Shift+Enter</kbd> to exit
+    </div>
 
     <!-- Drop overlay -->
     <div v-if="isDragging" class="drop-overlay">
@@ -277,6 +307,12 @@ onUnmounted(() => {
     <ImageManagerDialog
       :visible="isImageManagerVisible && hasOpenTabs"
       @close="closeImageManager"
+    />
+
+    <!-- Settings Dialog -->
+    <SettingsDialog
+      :visible="settingsStore.settingsDialogVisible"
+      @close="closeSettings"
     />
   </div>
 </template>
@@ -347,5 +383,52 @@ onUnmounted(() => {
 
 .main-layout.is-dragging {
   pointer-events: none;
+}
+
+/* Focus mode styles */
+.main-layout.focus-mode {
+  background-color: var(--color-bg-primary);
+}
+
+.main-layout.focus-mode .content-area {
+  justify-content: center;
+}
+
+.main-layout.focus-mode .editor-area {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.focus-mode-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  opacity: 0;
+  animation: fadeInOut 4s ease-in-out;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.focus-mode-hint kbd {
+  background-color: var(--color-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  border: 1px solid var(--color-border);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style>

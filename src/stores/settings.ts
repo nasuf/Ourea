@@ -19,6 +19,9 @@ export const useSettingsStore = defineStore("settings", () => {
   const sidebarWidth = ref(250);
   const focusMode = ref(false);
   const typewriterMode = ref(false);
+  const paragraphFocus = ref(false);
+  const paragraphFocusOpacity = ref(0.3); // Opacity of non-focused paragraphs
+  const settingsDialogVisible = ref(false);
 
   // Actions
   function setTheme(newTheme: Theme) {
@@ -55,6 +58,28 @@ export const useSettingsStore = defineStore("settings", () => {
     typewriterMode.value = !typewriterMode.value;
   }
 
+  function toggleParagraphFocus() {
+    paragraphFocus.value = !paragraphFocus.value;
+  }
+
+  function setParagraphFocusOpacity(opacity: number) {
+    paragraphFocusOpacity.value = Math.min(Math.max(opacity, 0.1), 0.9);
+  }
+
+  // Exit focus mode
+  function exitFocusMode() {
+    focusMode.value = false;
+  }
+
+  // Settings dialog
+  function openSettingsDialog() {
+    settingsDialogVisible.value = true;
+  }
+
+  function closeSettingsDialog() {
+    settingsDialogVisible.value = false;
+  }
+
   // Initialize theme on store creation
   function init() {
     applyTheme(theme.value);
@@ -83,12 +108,20 @@ export const useSettingsStore = defineStore("settings", () => {
     sidebarWidth,
     focusMode,
     typewriterMode,
+    paragraphFocus,
+    paragraphFocusOpacity,
+    settingsDialogVisible,
     // Actions
     setTheme,
     setFontSize,
     toggleSidebar,
     toggleFocusMode,
     toggleTypewriterMode,
+    toggleParagraphFocus,
+    setParagraphFocusOpacity,
+    exitFocusMode,
+    openSettingsDialog,
+    closeSettingsDialog,
     init,
   };
 });

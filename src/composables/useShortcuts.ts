@@ -2,6 +2,7 @@ import { onMounted, onUnmounted } from "vue";
 import { useFile } from "./useFile";
 import { useSettingsStore } from "@/stores/settings";
 import { useGlobalSearch } from "./useSearch";
+import { executeEditorCommand, hasActiveEditor } from "./useEditorCommands";
 
 interface ShortcutHandler {
   key: string;
@@ -113,6 +114,134 @@ export function useShortcuts() {
         openSearch();
       },
       description: "Find and Replace",
+    },
+
+    // Formatting shortcuts
+    {
+      key: "b",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("toggleBold"),
+      description: "Bold",
+    },
+    {
+      key: "i",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("toggleItalic"),
+      description: "Italic",
+    },
+    {
+      key: "k",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("toggleLink"),
+      description: "Insert Link",
+    },
+    {
+      key: "k",
+      meta: isMac,
+      ctrl: !isMac,
+      shift: true,
+      handler: () => executeEditorCommand("createCodeBlock"),
+      description: "Insert Code Block",
+    },
+    {
+      key: "`",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("toggleInlineCode"),
+      description: "Inline Code",
+    },
+
+    // Heading shortcuts (Cmd/Ctrl + 1-6)
+    {
+      key: "1",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 1),
+      description: "Heading 1",
+    },
+    {
+      key: "2",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 2),
+      description: "Heading 2",
+    },
+    {
+      key: "3",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 3),
+      description: "Heading 3",
+    },
+    {
+      key: "4",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 4),
+      description: "Heading 4",
+    },
+    {
+      key: "5",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 5),
+      description: "Heading 5",
+    },
+    {
+      key: "6",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => executeEditorCommand("wrapInHeading", 6),
+      description: "Heading 6",
+    },
+
+    // Focus mode
+    {
+      key: "Enter",
+      meta: isMac,
+      ctrl: !isMac,
+      shift: true,
+      handler: () => settingsStore.toggleFocusMode(),
+      description: "Toggle Focus Mode",
+    },
+    // Typewriter mode
+    {
+      key: "t",
+      meta: isMac,
+      ctrl: !isMac,
+      shift: true,
+      handler: () => settingsStore.toggleTypewriterMode(),
+      description: "Toggle Typewriter Mode",
+    },
+    // Paragraph focus
+    {
+      key: "p",
+      meta: isMac,
+      ctrl: !isMac,
+      shift: true,
+      handler: () => settingsStore.toggleParagraphFocus(),
+      description: "Toggle Paragraph Focus",
+    },
+    // Exit focus mode with ESC
+    {
+      key: "Escape",
+      handler: () => {
+        if (settingsStore.focusMode) {
+          settingsStore.exitFocusMode();
+        }
+      },
+      description: "Exit Focus Mode",
+    },
+    // Settings
+    {
+      key: ",",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => settingsStore.openSettingsDialog(),
+      description: "Open Settings",
     },
   ];
 
