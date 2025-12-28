@@ -9,6 +9,8 @@ export interface Tab {
   originalContent: string; // Content when file was opened/saved
   isDirty: boolean;
   isNew: boolean;
+  fileType: "markdown" | "text"; // markdown = render as markdown, text = render as code block
+  extension: string | null; // file extension for syntax highlighting
 }
 
 export const useTabsStore = defineStore("tabs", () => {
@@ -28,17 +30,36 @@ export const useTabsStore = defineStore("tabs", () => {
     return `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
 
+  function getFileExtension(fileName: string): string | null {
+    const parts = fileName.split(".");
+    if (parts.length > 1) {
+      return parts.pop()?.toLowerCase() || null;
+    }
+    return null;
+  }
+
+  function isMarkdownFile(fileName: string): boolean {
+    const ext = getFileExtension(fileName);
+    return ext === "md" || ext === "markdown";
+  }
+
   function createTab(options: Partial<Tab> = {}): Tab {
     const id = generateTabId();
     const content = options.content || "";
+    const fileName = options.fileName || "Untitled";
+    const extension = getFileExtension(fileName);
+    const fileType = options.fileType || (isMarkdownFile(fileName) ? "markdown" : "text");
+
     const newTab: Tab = {
       id,
       filePath: options.filePath || null,
-      fileName: options.fileName || "Untitled",
+      fileName,
       content: content,
       originalContent: content, // Store original content
       isDirty: options.isDirty || false,
       isNew: options.isNew !== undefined ? options.isNew : true,
+      fileType,
+      extension,
     };
 
     tabs.value.push(newTab);

@@ -2,6 +2,8 @@
 import { ref } from "vue";
 import { useFile } from "@/composables/useFile";
 import { useFileStore } from "@/stores/file";
+import { useWorkspaceStore } from "@/stores/workspace";
+import FileTree from "./FileTree.vue";
 
 defineProps<{
   width: number;
@@ -9,6 +11,7 @@ defineProps<{
 
 const { newFile, openFile } = useFile();
 const fileStore = useFileStore();
+const workspaceStore = useWorkspaceStore();
 
 // Clear confirmation popover
 const showClearConfirm = ref(false);
@@ -52,6 +55,37 @@ function removeFile(path: string) {
           </svg>
           <span>Open File</span>
         </button>
+
+        <button class="action-btn" @click="workspaceStore.openFolder" title="Open Folder">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3zm-8.322.12C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139z"/>
+          </svg>
+          <span>Open Folder</span>
+        </button>
+      </div>
+
+      <!-- File Tree (when workspace is open) -->
+      <div v-if="workspaceStore.hasWorkspace && workspaceStore.fileTree" class="file-tree-section">
+        <div class="section-header">
+          <span class="section-title">{{ workspaceStore.rootName }}</span>
+          <button
+            class="close-workspace-btn"
+            @click="workspaceStore.closeWorkspace"
+            title="Close Folder"
+          >
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="file-tree-container">
+          <FileTree
+            v-for="child in workspaceStore.fileTree.children"
+            :key="child.path"
+            :node="child"
+            :depth="0"
+          />
+        </div>
       </div>
 
       <div v-if="fileStore.recentFiles.length > 0" class="recent-files">
@@ -171,6 +205,36 @@ function removeFile(path: string) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+}
+
+.file-tree-section {
+  margin-bottom: 16px;
+}
+
+.file-tree-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.close-workspace-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: all 0.15s ease;
+}
+
+.close-workspace-btn:hover {
+  opacity: 1;
+  color: var(--color-danger);
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 .section-title {

@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useMilkdown } from "@/composables/useMilkdown";
 import { useTabsStore } from "@/stores/tabs";
+import CodeEditor from "./CodeEditor.vue";
 
 const tabsStore = useTabsStore();
 const editorRef = ref<HTMLDivElement | null>(null);
 const { isReady, createEditor, setContent, setTabSwitching, executeCommand } = useMilkdown(editorRef);
+
+// Track current file type
+const isMarkdownMode = computed(() => {
+  return tabsStore.activeTab?.fileType === "markdown";
+});
+
+// Get language for syntax highlighting hint
+const currentLanguage = computed(() => {
+  return tabsStore.activeTab?.extension || "text";
+});
 
 // Expose executeCommand to parent
 defineExpose({
@@ -15,67 +26,88 @@ defineExpose({
 // Track which tab's content is currently loaded
 const loadedTabId = ref<string | null>(null);
 
+// Handle code editor input for non-markdown files
+function handleCodeChange(newContent: string) {
+  tabsStore.updateActiveTabContent(newContent);
+}
+
+// Initialize editor when editorRef becomes available and we're in markdown mode
+async function initEditorIfNeeded() {
+  const activeTab = tabsStore.activeTab;
+  if (!activeTab || activeTab.fileType !== "markdown") return;
+  if (!editorRef.value) return;
+  if (isReady.value) return;
+
+  const initialContent = activeTab.content || "";
+  await createEditor(initialContent);
+  loadedTabId.value = activeTab.id;
+}
+
 // Watch for active tab changes
 watch(
   () => tabsStore.activeTabId,
-  (newTabId, oldTabId) => {
+  async (newTabId) => {
     if (!newTabId || newTabId === loadedTabId.value) return;
 
-    if (isReady.value) {
-      // Enable tab switching mode BEFORE any content changes
-      setTabSwitching(true);
+    const currentTab = tabsStore.activeTab;
+    if (!currentTab) return;
 
-      // Use nextTick to ensure DOM is ready, then load content
-      nextTick(() => {
-        // Re-fetch active tab inside nextTick to get latest data
-        const currentTab = tabsStore.activeTab;
-        if (!currentTab) {
-          setTabSwitching(false);
-          return;
-        }
-
+    // For markdown files, use Milkdown
+    if (currentTab.fileType === "markdown") {
+      if (isReady.value) {
+        // Editor already exists, just update content
+        setTabSwitching(true);
+        await nextTick();
         const content = currentTab.content || "";
-        setContent(content, false); // false = don't mark as change
+        setContent(content, false);
         loadedTabId.value = newTabId;
-
-        // Disable tab switching mode after content is fully processed
-        // Use longer timeout to ensure Milkdown has finished all async updates
-        setTimeout(() => {
-          setTabSwitching(false);
-        }, 300);
-      });
+        setTimeout(() => setTabSwitching(false), 300);
+      } else {
+        // Need to create editor - wait for DOM
+        await nextTick();
+        await initEditorIfNeeded();
+      }
+    } else {
+      // For text files, just update loadedTabId
+      loadedTabId.value = newTabId;
     }
   },
   { immediate: true }
 );
 
-onMounted(async () => {
-  // Wait for the DOM element to be available
-  await new Promise(resolve => setTimeout(resolve, 0));
-
-  if (editorRef.value) {
-    const activeTab = tabsStore.activeTab;
-
-    // Get initial content - empty string for new files
-    const initialContent = activeTab?.content || "";
-
-    await createEditor(initialContent);
-
-    if (activeTab) {
-      loadedTabId.value = activeTab.id;
-      // New files should stay dirty - no need to reset
-    }
+// Watch for editorRef becoming available
+watch(editorRef, async (newRef) => {
+  if (newRef && isMarkdownMode.value && !isReady.value) {
+    await initEditorIfNeeded();
   }
+});
+
+onMounted(async () => {
+  // Small delay to ensure DOM is ready
+  await nextTick();
+  await initEditorIfNeeded();
 });
 </script>
 
 <template>
   <div class="editor-wrapper">
-    <div v-if="!isReady" class="editor-loading">
-      <div class="loading-spinner"></div>
-      <span>Loading editor...</span>
-    </div>
-    <div ref="editorRef" class="milkdown-editor"></div>
+    <!-- Markdown Editor (Milkdown) -->
+    <template v-if="isMarkdownMode">
+      <div v-if="!isReady" class="editor-loading">
+        <div class="loading-spinner"></div>
+        <span>Loading editor...</span>
+      </div>
+      <div ref="editorRef" class="milkdown-editor"></div>
+    </template>
+
+    <!-- Code Editor for non-markdown files -->
+    <template v-else>
+      <CodeEditor
+        :model-value="tabsStore.activeTab?.content || ''"
+        :language="currentLanguage"
+        @update:model-value="handleCodeChange"
+      />
+    </template>
   </div>
 </template>
 

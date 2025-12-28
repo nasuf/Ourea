@@ -364,12 +364,6 @@ ourea/
   // 支持：ESC 键隐藏、选区消失自动隐藏
   ```
 
-- [ ] **T2.2.4** 集成斜杠命令插件 (暂未实现)
-  ```typescript
-  import { slash } from '@milkdown/plugin-slash'
-  // 支持：输入 / 触发命令菜单
-  ```
-
 - [x] **T2.2.5** 集成代码高亮插件
   ```typescript
   import { prism } from '@milkdown/plugin-prism'
@@ -481,10 +475,12 @@ ourea/
   clearRecentFiles()
   ```
 
-- [ ] **T3.1.4** 实现文件监听服务
+- [x] **T3.1.4** 实现文件监听服务
   ```rust
   // 使用 notify crate 监听文件变化
   // 当外部修改文件时通知前端
+  // commands/watcher.rs: start_watching, stop_watching, stop_all_watching
+  // composables/useFileWatcher.ts: 前端 composable
   ```
 
 #### 3.2 前端文件操作
@@ -529,28 +525,35 @@ ourea/
 
 #### 3.3 文件树功能
 
-- [ ] **T3.3.1** 实现文件夹打开
-  - 选择工作目录
-  - 递归读取目录结构
-  - 构建文件树数据
+- [x] **T3.3.1** 实现文件夹打开
+  - 选择工作目录 (openFolder)
+  - 递归读取目录结构 (read_directory_recursive)
+  - 构建文件树数据 (useWorkspaceStore)
 
-- [ ] **T3.3.2** 实现文件树组件
-  - 展示文件夹和文件
+- [x] **T3.3.2** 实现文件树组件
+  - 展示文件夹和文件 (FileTree.vue)
   - 图标区分文件类型
   - 展开/折叠文件夹
   - 单击选中，双击打开
 
-- [ ] **T3.3.3** 实现文件树右键菜单
-  - 新建文件
-  - 新建文件夹
-  - 重命名
-  - 删除
-  - 在 Finder/Explorer 中显示
+- [x] **T3.3.3** 实现文件树右键菜单
+  - 新建文件 (create_file)
+  - 新建文件夹 (create_directory)
+  - 重命名 (rename_path) - 使用 InputDialog 组件
+  - 删除 (delete_path)
+  - 在 Finder/Explorer 中显示 (reveal_in_finder)
 
-- [ ] **T3.3.4** 实现文件拖拽
-  - 拖拽文件到编辑器打开
-  - 拖拽文件重新排序
-  - 拖拽移动到文件夹
+- [x] **T3.3.4** 实现文件拖拽
+  - 拖拽文件到编辑器打开 (tauri://drag-drop)
+  - 支持多种文本文件格式 (不仅限于 .md)
+  - ~~拖拽文件重新排序~~ (不需要)
+  - ~~拖拽移动到文件夹~~ (不需要)
+
+- [x] **T3.3.5** 支持非 Markdown 文本文件
+  - 支持打开 40+ 种文本文件类型
+  - CodeEditor 组件 (Shiki 语法高亮)
+  - Tab 增加 fileType 和 extension 字段
+  - 自动检测文件类型并切换编辑模式
 
 #### 3.4 自动保存
 
@@ -569,10 +572,10 @@ ourea/
   - 窗口失去焦点时保存
   - ~~切换文件时保存~~ (多标签页模式不需要)
 
-- [ ] **T3.4.4** 实现崩溃恢复
-  - 定期保存到临时文件
+- [x] **T3.4.4** 实现崩溃恢复
+  - 定期保存到临时文件 (useRecovery.ts, 每30秒)
   - 启动时检查恢复文件
-  - 提示用户恢复
+  - 提示用户恢复 (RecoveryDialog)
 
 ---
 
@@ -630,17 +633,23 @@ ourea/
 
 #### 4.3 代码块增强
 
-- [ ] **T4.3.1** 实现语言选择器
+- [x] **T4.3.1** 实现代码块语法高亮 (Prism + Shiki)
+  - Markdown 代码块使用 Prism 语法高亮
+  - 非 Markdown 文件使用 Shiki 语法高亮
+  - 支持 40+ 编程语言
+  - 亮色/暗色主题自动切换
+
+- [ ] **T4.3.2** 实现语言选择器 (待实现)
   - 下拉选择编程语言
   - 自动检测语言
   - 记住常用语言
 
-- [ ] **T4.3.2** 实现代码块操作
+- [ ] **T4.3.3** 实现代码块操作 (待实现)
   - 一键复制代码
   - 代码折叠
   - 行号显示切换
 
-- [ ] **T4.3.3** 实现代码格式化（可选）
+- [ ] **T4.3.4** 实现代码格式化（可选）
   - 集成 Prettier
   - 支持常用语言格式化
 

@@ -1,5 +1,7 @@
 mod commands;
 
+use commands::watcher::WatcherState;
+use std::sync::{Arc, Mutex};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,6 +13,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .manage(Arc::new(Mutex::new(WatcherState::new())))
         .setup(|app| {
             // Initialize logging in debug mode
             if cfg!(debug_assertions) {
@@ -35,6 +38,16 @@ pub fn run() {
             commands::file::write_file,
             commands::file::file_exists,
             commands::file::get_file_info,
+            commands::file::read_directory,
+            commands::file::read_directory_recursive,
+            commands::file::create_file,
+            commands::file::create_directory,
+            commands::file::rename_path,
+            commands::file::delete_path,
+            commands::file::reveal_in_finder,
+            commands::watcher::start_watching,
+            commands::watcher::stop_watching,
+            commands::watcher::stop_all_watching,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
