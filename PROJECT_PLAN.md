@@ -741,10 +741,13 @@ ourea/
   - 监听系统主题变化
   - 自动切换主题
 
-- [ ] **T5.1.5** 实现自定义主题（可选）
-  - 主题编辑器
-  - 导入/导出主题
-  - 主题预设
+- [x] **T5.1.5** 实现预定义主题切换 ✅
+  - 预定义主题系统（10种主题）
+  - 主题画廊选择器
+  - 主题预览卡片
+  - 亮色主题：Default Light, Sepia, GitHub Light, Solarized Light
+  - 暗色主题：Default Dark, Nord, GitHub Dark, One Dark, Dracula, Solarized Dark
+  - 主题模式切换（Light/Dark/System）
 
 #### 5.2 快捷键系统
 

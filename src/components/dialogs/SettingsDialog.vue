@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { useSettingsStore, type Theme } from "@/stores/settings";
+import { useSettingsStore, type ThemeMode } from "@/stores/settings";
+import { predefinedThemes, getLightThemes, getDarkThemes, type ThemeDefinition } from "@/utils/themes";
 
 const props = defineProps<{
   visible: boolean;
@@ -43,6 +44,7 @@ function getTabSettings(tabId: SettingsTab) {
     case "appearance":
       return [
         { label: "Theme" },
+        { label: "Color Scheme" },
         { label: "Font Size" },
         { label: "Font Family" },
         { label: "Line Height" },
@@ -68,12 +70,24 @@ function getTabSettings(tabId: SettingsTab) {
   }
 }
 
-// Theme options
-const themeOptions: { value: Theme; label: string }[] = [
+// Theme mode options
+const themeModeOptions: { value: ThemeMode; label: string }[] = [
   { value: "light", label: "Light" },
   { value: "dark", label: "Dark" },
   { value: "system", label: "System" },
 ];
+
+// Get themes grouped by type
+const lightThemes = computed(() => getLightThemes());
+const darkThemes = computed(() => getDarkThemes());
+
+// Get current theme ID
+const currentThemeId = computed(() => settingsStore.currentTheme?.id || "");
+
+// Select a theme
+function selectTheme(theme: ThemeDefinition) {
+  settingsStore.selectTheme(theme.id);
+}
 
 // Font family options
 const fontFamilyOptions = [
@@ -150,7 +164,8 @@ function updateParagraphFocusOpacity(opacity: number) {
 
 // Reset to defaults
 function resetToDefaults() {
-  settingsStore.setTheme("system");
+  settingsStore.setThemeMode("system");
+  settingsStore.selectedThemeId = ""; // Reset to auto theme
   settingsStore.setFontSize(16);
   settingsStore.lineHeight = 1.6;
   settingsStore.fontFamily = "system-ui, -apple-system, sans-serif";
@@ -233,19 +248,90 @@ onUnmounted(() => {
             <!-- Appearance Tab -->
             <div v-if="activeTab === 'appearance'" class="settings-section">
               <div class="setting-group">
-                <label class="setting-label">Theme</label>
+                <label class="setting-label">Theme Mode</label>
                 <div class="setting-control">
                   <select
-                    :value="settingsStore.theme"
+                    :value="settingsStore.themeMode"
                     class="setting-select"
-                    @change="settingsStore.setTheme(($event.target as HTMLSelectElement).value as Theme)"
+                    @change="settingsStore.setThemeMode(($event.target as HTMLSelectElement).value as ThemeMode)"
                   >
-                    <option v-for="opt in themeOptions" :key="opt.value" :value="opt.value">
+                    <option v-for="opt in themeModeOptions" :key="opt.value" :value="opt.value">
                       {{ opt.label }}
                     </option>
                   </select>
                 </div>
+                <p class="setting-description">Choose light, dark, or follow system preference</p>
               </div>
+
+              <div class="setting-divider"></div>
+
+              <h3 class="setting-section-title">Light Themes</h3>
+              <div class="theme-gallery">
+                <button
+                  v-for="theme in lightThemes"
+                  :key="theme.id"
+                  class="theme-card"
+                  :class="{ active: currentThemeId === theme.id }"
+                  @click="selectTheme(theme)"
+                >
+                  <div
+                    class="theme-preview"
+                    :style="{
+                      '--preview-bg': theme.colors.bgPrimary,
+                      '--preview-bg-secondary': theme.colors.bgSecondary,
+                      '--preview-text': theme.colors.textPrimary,
+                      '--preview-accent': theme.colors.accent,
+                      '--preview-border': theme.colors.border,
+                    }"
+                  >
+                    <div class="preview-sidebar"></div>
+                    <div class="preview-content">
+                      <div class="preview-title"></div>
+                      <div class="preview-line"></div>
+                      <div class="preview-line short"></div>
+                    </div>
+                  </div>
+                  <div class="theme-info">
+                    <span class="theme-name">{{ theme.name }}</span>
+                    <span v-if="currentThemeId === theme.id" class="theme-active">Active</span>
+                  </div>
+                </button>
+              </div>
+
+              <h3 class="setting-section-title">Dark Themes</h3>
+              <div class="theme-gallery">
+                <button
+                  v-for="theme in darkThemes"
+                  :key="theme.id"
+                  class="theme-card"
+                  :class="{ active: currentThemeId === theme.id }"
+                  @click="selectTheme(theme)"
+                >
+                  <div
+                    class="theme-preview"
+                    :style="{
+                      '--preview-bg': theme.colors.bgPrimary,
+                      '--preview-bg-secondary': theme.colors.bgSecondary,
+                      '--preview-text': theme.colors.textPrimary,
+                      '--preview-accent': theme.colors.accent,
+                      '--preview-border': theme.colors.border,
+                    }"
+                  >
+                    <div class="preview-sidebar"></div>
+                    <div class="preview-content">
+                      <div class="preview-title"></div>
+                      <div class="preview-line"></div>
+                      <div class="preview-line short"></div>
+                    </div>
+                  </div>
+                  <div class="theme-info">
+                    <span class="theme-name">{{ theme.name }}</span>
+                    <span v-if="currentThemeId === theme.id" class="theme-active">Active</span>
+                  </div>
+                </button>
+              </div>
+
+              <div class="setting-divider"></div>
 
               <div class="setting-group">
                 <label class="setting-label">Font Size</label>
@@ -478,9 +564,9 @@ onUnmounted(() => {
 .settings-dialog {
   background-color: var(--color-bg-primary);
   border-radius: 12px;
-  width: 560px;
+  width: 640px;
   max-width: 90vw;
-  max-height: 80vh;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -768,5 +854,99 @@ onUnmounted(() => {
 
 .btn-close:hover {
   filter: brightness(1.1);
+}
+
+/* Theme Gallery */
+.theme-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.theme-card {
+  background: none;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-card:hover {
+  border-color: var(--color-accent);
+}
+
+.theme-card.active {
+  border-color: var(--color-accent);
+  background-color: var(--color-bg-secondary);
+}
+
+.theme-preview {
+  height: 60px;
+  border-radius: 4px;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--preview-bg);
+  border: 1px solid var(--preview-border);
+}
+
+.preview-sidebar {
+  width: 20%;
+  background-color: var(--preview-bg-secondary);
+  border-right: 1px solid var(--preview-border);
+}
+
+.preview-content {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-title {
+  height: 8px;
+  width: 60%;
+  background-color: var(--preview-text);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.preview-line {
+  height: 4px;
+  width: 100%;
+  background-color: var(--preview-text);
+  border-radius: 2px;
+  opacity: 0.3;
+}
+
+.preview-line.short {
+  width: 70%;
+}
+
+.theme-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.theme-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.theme-active {
+  font-size: 10px;
+  color: var(--color-accent);
+  background-color: rgba(59, 130, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
 }
 </style>

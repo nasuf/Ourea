@@ -1,11 +1,20 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import {
+  predefinedThemes,
+  getThemeById,
+  getDefaultTheme,
+  applyTheme,
+  type ThemeDefinition,
+} from "@/utils/themes";
 
-export type Theme = "light" | "dark" | "system";
+export type ThemeMode = "light" | "dark" | "system";
 
 export const useSettingsStore = defineStore("settings", () => {
   // State
-  const theme = ref<Theme>("system");
+  const themeMode = ref<ThemeMode>("system");
+  const selectedThemeId = ref<string>(""); // Empty means auto-select based on mode
+  const currentTheme = ref<ThemeDefinition | null>(null);
   const fontSize = ref(16);
   const fontFamily = ref("system-ui, -apple-system, sans-serif");
   const lineHeight = ref(1.6);
@@ -24,19 +33,47 @@ export const useSettingsStore = defineStore("settings", () => {
   const settingsDialogVisible = ref(false);
 
   // Actions
-  function setTheme(newTheme: Theme) {
-    theme.value = newTheme;
-    applyTheme(newTheme);
+  function setThemeMode(newMode: ThemeMode) {
+    themeMode.value = newMode;
+    updateCurrentTheme();
   }
 
-  function applyTheme(themeValue: Theme) {
-    const root = document.documentElement;
-    const isDark =
-      themeValue === "dark" ||
-      (themeValue === "system" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
+  function setTheme(newTheme: ThemeMode) {
+    // Backward compatibility
+    setThemeMode(newTheme);
+  }
 
-    root.classList.toggle("dark", isDark);
+  function selectTheme(themeId: string) {
+    selectedThemeId.value = themeId;
+    updateCurrentTheme();
+  }
+
+  function updateCurrentTheme() {
+    let theme: ThemeDefinition | undefined;
+
+    if (selectedThemeId.value) {
+      // User has explicitly selected a theme
+      theme = getThemeById(selectedThemeId.value);
+    }
+
+    if (!theme) {
+      // Auto-select based on mode
+      const prefersDark =
+        themeMode.value === "dark" ||
+        (themeMode.value === "system" &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
+      theme = getDefaultTheme(prefersDark);
+    }
+
+    if (theme) {
+      currentTheme.value = theme;
+      applyTheme(theme);
+    }
+  }
+
+  // Get available themes based on current mode preference
+  function getAvailableThemes(): ThemeDefinition[] {
+    return predefinedThemes;
   }
 
   function setFontSize(size: number) {
@@ -82,21 +119,27 @@ export const useSettingsStore = defineStore("settings", () => {
 
   // Initialize theme on store creation
   function init() {
-    applyTheme(theme.value);
+    updateCurrentTheme();
 
     // Listen for system theme changes
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", () => {
-        if (theme.value === "system") {
-          applyTheme("system");
+        if (themeMode.value === "system") {
+          updateCurrentTheme();
         }
       });
   }
 
   return {
     // State
-    theme,
+    themeMode,
+    selectedThemeId,
+    currentTheme,
+    // Backward compatibility
+    get theme() {
+      return themeMode.value;
+    },
     fontSize,
     fontFamily,
     lineHeight,
@@ -113,6 +156,9 @@ export const useSettingsStore = defineStore("settings", () => {
     settingsDialogVisible,
     // Actions
     setTheme,
+    setThemeMode,
+    selectTheme,
+    getAvailableThemes,
     setFontSize,
     toggleSidebar,
     toggleFocusMode,
