@@ -5,7 +5,12 @@ import { useTabsStore } from "@/stores/tabs";
 
 const tabsStore = useTabsStore();
 const editorRef = ref<HTMLDivElement | null>(null);
-const { isReady, createEditor, setContent, setTabSwitching } = useMilkdown(editorRef);
+const { isReady, createEditor, setContent, setTabSwitching, executeCommand } = useMilkdown(editorRef);
+
+// Expose executeCommand to parent
+defineExpose({
+  executeCommand,
+});
 
 // Track which tab's content is currently loaded
 const loadedTabId = ref<string | null>(null);

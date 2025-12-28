@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useTabsStore } from "@/stores/tabs";
+import { useEditorStore } from "@/stores/editor";
 
 const tabsStore = useTabsStore();
+const editorStore = useEditorStore();
 
 const wordCount = computed(() => {
   const content = tabsStore.activeTab?.content || "";
@@ -34,6 +36,10 @@ const charCount = computed(() => {
     </div>
 
     <div class="status-right">
+      <span class="status-item">
+        Ln {{ editorStore.cursorPosition.line }}, Col {{ editorStore.cursorPosition.column }}
+      </span>
+      <span class="status-divider">|</span>
       <span class="status-item">UTF-8</span>
       <span class="status-divider">|</span>
       <span class="status-item">Markdown</span>
