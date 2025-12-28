@@ -442,3 +442,39 @@ pub fn copy_image(source: &str, destination: &str) -> Result<(), FileError> {
     fs::copy(source_path, dest_path)?;
     Ok(())
 }
+
+/// Open file or URL in system default application
+#[tauri::command]
+pub fn open_in_system(path: &str) -> Result<(), FileError> {
+    let path = Path::new(path);
+
+    if !path.exists() {
+        return Err(FileError::NotFound(path.display().to_string()));
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(path)
+            .spawn()
+            .map_err(|e| FileError::Io(e))?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("cmd")
+            .args(["/C", "start", "", &path.display().to_string()])
+            .spawn()
+            .map_err(|e| FileError::Io(e))?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(path)
+            .spawn()
+            .map_err(|e| FileError::Io(e))?;
+    }
+
+    Ok(())
+}

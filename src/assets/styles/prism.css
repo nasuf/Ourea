@@ -236,3 +236,40 @@
   width: 14px;
   height: 14px;
 }
+
+/* Format button */
+.code-block-format-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-right: auto;
+  margin-left: 8px;
+}
+
+.code-block-format-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent);
+}
+
+.code-block-format-btn.formatting {
+  animation: pulse-format 0.5s ease;
+}
+
+@keyframes pulse-format {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); color: var(--color-accent); }
+  100% { transform: scale(1); }
+}
+
+.code-block-format-btn svg {
+  width: 14px;
+  height: 14px;
+}

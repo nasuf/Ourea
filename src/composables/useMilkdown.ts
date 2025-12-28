@@ -30,6 +30,7 @@ import { imageUploadPlugin } from "@/plugins/imagePlugin";
 import { codeBlockEnhancedPlugin } from "@/plugins/codeBlockPlugin";
 import { mathPlugin } from "@/plugins/mathPlugin";
 import { tableEnhancedPlugin } from "@/plugins/tablePlugin";
+import { searchHighlightPlugin } from "@/plugins/searchHighlightPlugin";
 
 export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | null>>) {
   const tabsStore = useTabsStore();
@@ -234,6 +235,7 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
         .use(codeBlockEnhancedPlugin)
         .use(mathPlugin)
         .use(tableEnhancedPlugin)
+        .use(searchHighlightPlugin)
         .create();
 
       // Add event listeners to editor container
@@ -365,6 +367,26 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
     }
   }
 
+  function insertText(text: string): boolean {
+    if (!editor.value) return false;
+
+    try {
+      return editor.value.action((ctx) => {
+        const view = ctx.get(editorViewCtx);
+        const { state, dispatch } = view;
+        const { selection } = state;
+
+        // Insert text at current cursor position
+        const tr = state.tr.insertText(text, selection.from, selection.to);
+        dispatch(tr);
+        return true;
+      });
+    } catch (e) {
+      console.error("Failed to insert text:", e);
+      return false;
+    }
+  }
+
   onUnmounted(() => {
     destroyEditor();
   });
@@ -378,5 +400,6 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
     setTabSwitching,
     getEditorContent,
     executeCommand,
+    insertText,
   };
 }

@@ -1,6 +1,7 @@
 import { $prose } from "@milkdown/kit/utils";
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view";
+import { formatCode, isFormattableLanguage } from "@/utils/formatCode";
 
 const codeBlockPluginKey = new PluginKey("codeBlockEnhanced");
 
@@ -64,7 +65,8 @@ async function copyToClipboard(text: string): Promise<boolean> {
 function createCodeBlockToolbar(
   language: string,
   onLanguageChange: (lang: string) => void,
-  onCopy: () => void
+  onCopy: () => void,
+  onFormat: () => void
 ): HTMLElement {
   const toolbar = document.createElement("div");
   toolbar.className = "code-block-toolbar";
@@ -89,6 +91,31 @@ function createCodeBlockToolbar(
     const target = e.target as HTMLSelectElement;
     onLanguageChange(target.value);
   });
+
+  // Format button (only show for formattable languages)
+  const canFormat = isFormattableLanguage(language);
+  if (canFormat) {
+    const formatBtn = document.createElement("button");
+    formatBtn.className = "code-block-format-btn";
+    formatBtn.title = "Format code (Prettier)";
+    formatBtn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H4z"/>
+        <path d="M4.5 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z"/>
+      </svg>
+    `;
+
+    formatBtn.addEventListener("click", () => {
+      onFormat();
+      // Show formatting feedback
+      formatBtn.classList.add("formatting");
+      setTimeout(() => {
+        formatBtn.classList.remove("formatting");
+      }, 500);
+    });
+
+    toolbar.appendChild(formatBtn);
+  }
 
   // Copy button
   const copyBtn = document.createElement("button");
@@ -162,6 +189,14 @@ export const codeBlockEnhancedPlugin = $prose(() => {
                   },
                   async () => {
                     await copyToClipboard(getCodeContent());
+                  },
+                  async () => {
+                    // Format code
+                    const code = getCodeContent();
+                    const event = new CustomEvent("code-block-format", {
+                      detail: { pos, code, language },
+                    });
+                    document.dispatchEvent(event);
                   }
                 );
               },
@@ -184,11 +219,33 @@ export const codeBlockEnhancedPlugin = $prose(() => {
         view.dispatch(tr);
       };
 
+      // Listen for format events
+      const handleFormat = async (e: Event) => {
+        const { pos, code, language } = (e as CustomEvent).detail;
+        const result = await formatCode(code, language);
+
+        if (!result.error) {
+          // Get the current node at the position
+          const node = view.state.doc.nodeAt(pos);
+          if (node && node.type.name === "code_block") {
+            // Replace the node content with formatted code
+            const schema = view.state.schema;
+            const textNode = schema.text(result.formatted.trim());
+            const newCodeBlock = node.type.create(node.attrs, textNode);
+
+            const tr = view.state.tr.replaceWith(pos, pos + node.nodeSize, newCodeBlock);
+            view.dispatch(tr);
+          }
+        }
+      };
+
       document.addEventListener("code-block-lang-change", handleLangChange);
+      document.addEventListener("code-block-format", handleFormat);
 
       return {
         destroy() {
           document.removeEventListener("code-block-lang-change", handleLangChange);
+          document.removeEventListener("code-block-format", handleFormat);
         },
       };
     },

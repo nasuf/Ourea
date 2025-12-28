@@ -47,6 +47,7 @@ pub fn run() {
             commands::file::reveal_in_finder,
             commands::file::save_image,
             commands::file::copy_image,
+            commands::file::open_in_system,
             commands::watcher::start_watching,
             commands::watcher::stop_watching,
             commands::watcher::stop_all_watching,

@@ -9,6 +9,8 @@ import MilkdownEditor from "../editor/MilkdownEditor.vue";
 import EditorToolbar from "../editor/EditorToolbar.vue";
 import EmptyState from "../editor/EmptyState.vue";
 import SearchDialog from "../dialogs/SearchDialog.vue";
+import FormulaDialog from "../dialogs/FormulaDialog.vue";
+import ImageManagerDialog from "../dialogs/ImageManagerDialog.vue";
 import { useTabsStore } from "@/stores/tabs";
 import { useFile } from "@/composables/useFile";
 import { useGlobalSearch } from "@/composables/useSearch";
@@ -29,6 +31,37 @@ const {
 
 // Search dialog ref
 const searchDialogRef = ref<InstanceType<typeof SearchDialog> | null>(null);
+
+// Formula dialog state
+const isFormulaDialogVisible = ref(false);
+
+function openFormulaDialog() {
+  isFormulaDialogVisible.value = true;
+}
+
+function closeFormulaDialog() {
+  isFormulaDialogVisible.value = false;
+}
+
+function handleInsertFormula(formula: string, isBlock: boolean) {
+  if (editorRef.value) {
+    // Insert formula as LaTeX math text
+    const formulaText = isBlock ? `$$\n${formula}\n$$` : `$${formula}$`;
+    editorRef.value.insertText(formulaText);
+  }
+  closeFormulaDialog();
+}
+
+// Image Manager dialog state
+const isImageManagerVisible = ref(false);
+
+function openImageManager() {
+  isImageManagerVisible.value = true;
+}
+
+function closeImageManager() {
+  isImageManagerVisible.value = false;
+}
 
 // Handle search events
 function handleSearch(query: string, options: any) {
@@ -104,6 +137,17 @@ const editorRef = ref<InstanceType<typeof MilkdownEditor> | null>(null);
 
 // Handle toolbar commands
 function handleToolbarCommand(command: string, payload?: any) {
+  // Handle special commands
+  if (command === "openFormulaDialog") {
+    openFormulaDialog();
+    return;
+  }
+
+  if (command === "openImageManager") {
+    openImageManager();
+    return;
+  }
+
   if (editorRef.value) {
     editorRef.value.executeCommand(command, payload);
   }
@@ -220,6 +264,19 @@ onUnmounted(() => {
       @replace-all="handleReplaceAll"
       @next="handleNext"
       @prev="handlePrev"
+    />
+
+    <!-- Formula Dialog -->
+    <FormulaDialog
+      :visible="isFormulaDialogVisible && hasOpenTabs"
+      @close="closeFormulaDialog"
+      @insert="handleInsertFormula"
+    />
+
+    <!-- Image Manager Dialog -->
+    <ImageManagerDialog
+      :visible="isImageManagerVisible && hasOpenTabs"
+      @close="closeImageManager"
     />
   </div>
 </template>

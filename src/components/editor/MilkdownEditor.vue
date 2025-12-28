@@ -6,7 +6,7 @@ import CodeEditor from "./CodeEditor.vue";
 
 const tabsStore = useTabsStore();
 const editorRef = ref<HTMLDivElement | null>(null);
-const { isReady, createEditor, setContent, setTabSwitching, executeCommand } = useMilkdown(editorRef);
+const { isReady, createEditor, setContent, setTabSwitching, executeCommand, insertText } = useMilkdown(editorRef);
 
 // Track current file type
 const isMarkdownMode = computed(() => {
@@ -18,9 +18,10 @@ const currentLanguage = computed(() => {
   return tabsStore.activeTab?.extension || "text";
 });
 
-// Expose executeCommand to parent
+// Expose methods to parent
 defineExpose({
   executeCommand,
+  insertText,
 });
 
 // Track which tab's content is currently loaded

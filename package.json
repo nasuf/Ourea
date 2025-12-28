@@ -13,6 +13,7 @@
     "tauri:build": "cargo tauri build"
   },
   "dependencies": {
+    "@babel/parser": "^7.28.5",
     "@milkdown/kit": "^7.8.0",
     "@milkdown/plugin-block": "^7.8.0",
     "@milkdown/plugin-clipboard": "^7.8.0",
@@ -35,6 +36,7 @@
     "@vueuse/core": "^14.1.0",
     "katex": "^0.16.27",
     "pinia": "^3.0.4",
+    "prettier": "^3.7.4",
     "prismjs": "^1.30.0",
     "shiki": "^3.20.0",
     "vue": "^3.5.26",

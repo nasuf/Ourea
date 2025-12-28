@@ -1,5 +1,6 @@
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useTabsStore } from "@/stores/tabs";
+import { updateSearchHighlight } from "@/plugins/searchHighlightPlugin";
 
 export interface SearchOptions {
   caseSensitive: boolean;
@@ -46,6 +47,8 @@ export function useSearch() {
     isSearchOpen.value = false;
     matches.value = [];
     currentMatchIndex.value = 0;
+    // Clear highlight
+    updateSearchHighlight(null);
   }
 
   function buildSearchPattern(query: string, options: SearchOptions): RegExp | null {
@@ -80,6 +83,8 @@ export function useSearch() {
     if (!content || !query) {
       matches.value = [];
       currentMatchIndex.value = 0;
+      // Clear highlight
+      updateSearchHighlight(null);
       return;
     }
 
@@ -87,6 +92,7 @@ export function useSearch() {
     if (!regex) {
       matches.value = [];
       currentMatchIndex.value = 0;
+      updateSearchHighlight(null);
       return;
     }
 
@@ -115,17 +121,38 @@ export function useSearch() {
     if (foundMatches.length > 0) {
       currentMatchIndex.value = 0;
     }
+
+    // Update highlight
+    updateSearchHighlight({
+      query,
+      caseSensitive: options.caseSensitive,
+      regex: options.regex,
+      wholeWord: options.wholeWord,
+      currentIndex: currentMatchIndex.value,
+    });
   }
 
   function nextMatch() {
     if (matches.value.length === 0) return;
     currentMatchIndex.value = (currentMatchIndex.value + 1) % matches.value.length;
+    // Update highlight with new current index
+    updateSearchHighlight({
+      query: searchQuery.value,
+      ...searchOptions.value,
+      currentIndex: currentMatchIndex.value,
+    });
   }
 
   function prevMatch() {
     if (matches.value.length === 0) return;
     currentMatchIndex.value =
       (currentMatchIndex.value - 1 + matches.value.length) % matches.value.length;
+    // Update highlight with new current index
+    updateSearchHighlight({
+      query: searchQuery.value,
+      ...searchOptions.value,
+      currentIndex: currentMatchIndex.value,
+    });
   }
 
   function replace(replacement: string): boolean {
