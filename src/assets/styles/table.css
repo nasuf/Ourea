@@ -1,0 +1,111 @@
+/* Table toolbar styles */
+
+.table-toolbar-container {
+  display: none;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.table-toolbar-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.table-toolbar-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+.table-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--color-border);
+  margin: 0 4px;
+}
+
+/* Enhanced table styles */
+.milkdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  background: var(--color-bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.milkdown th,
+.milkdown td {
+  border: 1px solid var(--color-border);
+  padding: 10px 14px;
+  text-align: left;
+  min-width: 80px;
+  position: relative;
+}
+
+.milkdown th {
+  background: var(--color-bg-secondary);
+  font-weight: 600;
+}
+
+.milkdown tr:hover td {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Table cell selection */
+.milkdown td.selectedCell,
+.milkdown th.selectedCell {
+  background: rgba(59, 130, 246, 0.15);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* Table resize handles */
+.milkdown .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-accent);
+  cursor: col-resize;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.milkdown th:hover .column-resize-handle,
+.milkdown td:hover .column-resize-handle {
+  opacity: 1;
+}
+
+/* Dark mode adjustments */
+.dark .table-toolbar {
+  background: var(--color-bg-secondary);
+}
+
+.dark .milkdown tr:hover td {
+  background: rgba(59, 130, 246, 0.08);
+}

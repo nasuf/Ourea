@@ -26,6 +26,10 @@ import { prism, prismConfig } from "@milkdown/plugin-prism";
 import { refractor } from "refractor/all";
 import { useTabsStore } from "@/stores/tabs";
 import { useEditorStore } from "@/stores/editor";
+import { imageUploadPlugin } from "@/plugins/imagePlugin";
+import { codeBlockEnhancedPlugin } from "@/plugins/codeBlockPlugin";
+import { mathPlugin } from "@/plugins/mathPlugin";
+import { tableEnhancedPlugin } from "@/plugins/tablePlugin";
 
 export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | null>>) {
   const tabsStore = useTabsStore();
@@ -226,6 +230,10 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
         .use(indent)
         .use(block)
         .use(prism)
+        .use(imageUploadPlugin)
+        .use(codeBlockEnhancedPlugin)
+        .use(mathPlugin)
+        .use(tableEnhancedPlugin)
         .create();
 
       // Add event listeners to editor container

@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted } from "vue";
 import { useFile } from "./useFile";
 import { useSettingsStore } from "@/stores/settings";
+import { useGlobalSearch } from "./useSearch";
 
 interface ShortcutHandler {
   key: string;
@@ -15,6 +16,7 @@ interface ShortcutHandler {
 export function useShortcuts() {
   const { newFile, openFile, saveFile, saveFileAs, closeActiveTab } = useFile();
   const settingsStore = useSettingsStore();
+  const { openSearch, isSearchOpen, closeSearch } = useGlobalSearch();
 
   // Detect platform
   const isMac = navigator.platform.toLowerCase().includes("mac");
@@ -87,6 +89,30 @@ export function useShortcuts() {
       ctrl: !isMac,
       handler: () => settingsStore.setFontSize(16),
       description: "Reset Font Size",
+    },
+
+    // Search
+    {
+      key: "f",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => {
+        if (isSearchOpen.value) {
+          closeSearch();
+        } else {
+          openSearch();
+        }
+      },
+      description: "Find",
+    },
+    {
+      key: "h",
+      meta: isMac,
+      ctrl: !isMac,
+      handler: () => {
+        openSearch();
+      },
+      description: "Find and Replace",
     },
   ];
 

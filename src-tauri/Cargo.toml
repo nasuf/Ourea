@@ -46,6 +46,9 @@ log = "0.4"
 dirs = "5"
 notify = "7"
 
+# Base64 encoding
+base64 = "0.22"
+
 # Markdown parsing
 pulldown-cmark = "0.12"
 

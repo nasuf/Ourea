@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::STANDARD, Engine};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
@@ -397,5 +398,47 @@ pub fn reveal_in_finder(path: &str) -> Result<(), FileError> {
         }
     }
 
+    Ok(())
+}
+
+/// Save image from base64 data
+#[tauri::command]
+pub fn save_image(base64_data: &str, path: &str) -> Result<(), FileError> {
+    let path = Path::new(path);
+
+    // Create parent directories if needed
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent)?;
+        }
+    }
+
+    // Decode base64 and save
+    let bytes = STANDARD
+        .decode(base64_data)
+        .map_err(|e| FileError::Io(std::io::Error::new(std::io::ErrorKind::InvalidData, e)))?;
+
+    fs::write(path, bytes)?;
+    Ok(())
+}
+
+/// Copy image from source to destination
+#[tauri::command]
+pub fn copy_image(source: &str, destination: &str) -> Result<(), FileError> {
+    let source_path = Path::new(source);
+    let dest_path = Path::new(destination);
+
+    if !source_path.exists() {
+        return Err(FileError::NotFound(source.to_string()));
+    }
+
+    // Create parent directories if needed
+    if let Some(parent) = dest_path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent)?;
+        }
+    }
+
+    fs::copy(source_path, dest_path)?;
     Ok(())
 }

@@ -8,11 +8,76 @@ import StatusBar from "./StatusBar.vue";
 import MilkdownEditor from "../editor/MilkdownEditor.vue";
 import EditorToolbar from "../editor/EditorToolbar.vue";
 import EmptyState from "../editor/EmptyState.vue";
+import SearchDialog from "../dialogs/SearchDialog.vue";
 import { useTabsStore } from "@/stores/tabs";
 import { useFile } from "@/composables/useFile";
+import { useGlobalSearch } from "@/composables/useSearch";
 
 const tabsStore = useTabsStore();
 const { openFile } = useFile();
+const {
+  isSearchOpen,
+  closeSearch,
+  search,
+  nextMatch,
+  prevMatch,
+  replace,
+  replaceAll,
+  matchCount,
+  currentMatchIndex,
+} = useGlobalSearch();
+
+// Search dialog ref
+const searchDialogRef = ref<InstanceType<typeof SearchDialog> | null>(null);
+
+// Handle search events
+function handleSearch(query: string, options: any) {
+  search(query, options);
+  // Update match info in dialog
+  if (searchDialogRef.value) {
+    searchDialogRef.value.updateMatchInfo(
+      matchCount.value > 0 ? currentMatchIndex.value + 1 : 0,
+      matchCount.value
+    );
+  }
+}
+
+function handleNext() {
+  nextMatch();
+  if (searchDialogRef.value) {
+    searchDialogRef.value.updateMatchInfo(
+      matchCount.value > 0 ? currentMatchIndex.value + 1 : 0,
+      matchCount.value
+    );
+  }
+}
+
+function handlePrev() {
+  prevMatch();
+  if (searchDialogRef.value) {
+    searchDialogRef.value.updateMatchInfo(
+      matchCount.value > 0 ? currentMatchIndex.value + 1 : 0,
+      matchCount.value
+    );
+  }
+}
+
+function handleReplace(replacement: string) {
+  replace(replacement);
+  if (searchDialogRef.value) {
+    searchDialogRef.value.updateMatchInfo(
+      matchCount.value > 0 ? currentMatchIndex.value + 1 : 0,
+      matchCount.value
+    );
+  }
+}
+
+function handleReplaceAll(replacement: string) {
+  replaceAll(replacement);
+  if (searchDialogRef.value) {
+    searchDialogRef.value.updateMatchInfo(0, 0);
+  }
+}
 
 const sidebarVisible = ref(true);
 const sidebarWidth = ref(250);
@@ -144,6 +209,18 @@ onUnmounted(() => {
         <span>Drop file to open</span>
       </div>
     </div>
+
+    <!-- Search Dialog -->
+    <SearchDialog
+      ref="searchDialogRef"
+      :visible="isSearchOpen && hasOpenTabs"
+      @close="closeSearch"
+      @search="handleSearch"
+      @replace="handleReplace"
+      @replace-all="handleReplaceAll"
+      @next="handleNext"
+      @prev="handlePrev"
+    />
   </div>
 </template>
 

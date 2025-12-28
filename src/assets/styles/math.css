@@ -1,0 +1,84 @@
+/* KaTeX math formula styles */
+
+/* Import KaTeX CSS */
+@import "katex/dist/katex.min.css";
+
+/* Math source (hidden when preview is shown) */
+.math-source {
+  display: none;
+}
+
+/* Show source when focused or editing */
+.ProseMirror-focused .math-source {
+  display: inline;
+}
+
+.ProseMirror-focused .math-source + .math-inline-preview,
+.ProseMirror-focused .math-source + .math-block-preview {
+  display: none;
+}
+
+/* Inline math preview */
+.math-inline-preview {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 2px;
+}
+
+.math-inline-preview .katex {
+  font-size: 1em;
+}
+
+/* Block math preview */
+.math-block-preview {
+  display: block;
+  margin: 1em 0;
+  padding: 1em;
+  text-align: center;
+  background-color: var(--color-bg-secondary);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.math-block-preview .katex {
+  font-size: 1.2em;
+}
+
+.math-block-preview .katex-display {
+  margin: 0;
+}
+
+/* Math error styling */
+.math-error {
+  color: var(--color-danger);
+  font-family: monospace;
+  font-size: 0.9em;
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Dark mode adjustments */
+.dark .math-block-preview {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Make sure KaTeX colors work in both themes */
+.katex {
+  color: var(--color-text-primary);
+}
+
+/* Override some KaTeX defaults for better theming */
+.katex .mord,
+.katex .mbin,
+.katex .mrel,
+.katex .mopen,
+.katex .mclose,
+.katex .mpunct,
+.katex .minner {
+  color: var(--color-text-primary);
+}
+
+.katex .mop {
+  color: var(--color-accent);
+}

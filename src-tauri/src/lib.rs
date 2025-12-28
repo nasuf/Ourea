@@ -45,6 +45,8 @@ pub fn run() {
             commands::file::rename_path,
             commands::file::delete_path,
             commands::file::reveal_in_finder,
+            commands::file::save_image,
+            commands::file::copy_image,
             commands::watcher::start_watching,
             commands::watcher::stop_watching,
             commands::watcher::stop_all_watching,
