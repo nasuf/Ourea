@@ -36,8 +36,20 @@ export function useSearch() {
 
   const matchCount = computed(() => matches.value.length);
 
+  // Track if replace mode is active
+  const isReplaceMode = ref(false);
+
   function openSearch(initialQuery?: string) {
     isSearchOpen.value = true;
+    isReplaceMode.value = false;
+    if (initialQuery) {
+      searchQuery.value = initialQuery;
+    }
+  }
+
+  function openSearchReplace(initialQuery?: string) {
+    isSearchOpen.value = true;
+    isReplaceMode.value = true;
     if (initialQuery) {
       searchQuery.value = initialQuery;
     }
@@ -202,6 +214,7 @@ export function useSearch() {
   return {
     // State
     isSearchOpen,
+    isReplaceMode,
     searchQuery,
     searchOptions,
     matches,
@@ -211,6 +224,7 @@ export function useSearch() {
 
     // Methods
     openSearch,
+    openSearchReplace,
     closeSearch,
     search,
     nextMatch,

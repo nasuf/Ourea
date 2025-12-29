@@ -6,6 +6,7 @@ import { useShortcuts } from "./composables/useShortcuts";
 import { useAutoSave } from "./composables/useAutoSave";
 import { useCloseConfirm } from "./composables/useCloseConfirm";
 import { useRecovery } from "./composables/useRecovery";
+import { useMenuEvents } from "./composables/useMenuEvents";
 import { useSettingsStore } from "./stores/settings";
 
 // Initialize shortcuts
@@ -13,6 +14,9 @@ useShortcuts();
 
 // Initialize auto-save
 useAutoSave();
+
+// Initialize menu event handlers
+useMenuEvents();
 
 // Initialize settings
 const settingsStore = useSettingsStore();

@@ -173,6 +173,7 @@ function handleToolbarCommand(command: string, payload?: any) {
 let unlistenDrop: UnlistenFn | null = null;
 let unlistenHover: UnlistenFn | null = null;
 let unlistenCancel: UnlistenFn | null = null;
+let unlistenMenuEvent: UnlistenFn | null = null;
 
 // Supported text file extensions
 const TEXT_EXTENSIONS = new Set([
@@ -230,12 +231,20 @@ onMounted(async () => {
   unlistenCancel = await listen("tauri://drag-leave", () => {
     isDragging.value = false;
   });
+
+  // Listen for menu events that need local state access
+  unlistenMenuEvent = await listen<string>("menu-event", (event) => {
+    if (event.payload === "toggle_outline") {
+      toggleOutline();
+    }
+  });
 });
 
 onUnmounted(() => {
   if (unlistenDrop) unlistenDrop();
   if (unlistenHover) unlistenHover();
   if (unlistenCancel) unlistenCancel();
+  if (unlistenMenuEvent) unlistenMenuEvent();
 });
 </script>
 
