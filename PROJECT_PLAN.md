@@ -351,17 +351,19 @@ ourea/
   // 支持：Tab 缩进、Shift+Tab 反缩进
   ```
 
-- [x] **T2.2.2** 集成块拖拽插件
+- [ ] **T2.2.2** 集成块拖拽插件 (暂时禁用 - 导致渲染问题)
   ```typescript
   import { block } from '@milkdown/plugin-block'
   // 支持：拖拽手柄、块级元素重排
+  // 状态：已集成但禁用，需要修复渲染问题
   ```
 
-- [x] **T2.2.3** 集成工具提示插件 (自定义 DOM 实现)
+- [ ] **T2.2.3** 集成工具提示插件 (暂时禁用 - 调试中)
   ```typescript
   // 使用自定义 DOM 实现替代 @milkdown/plugin-tooltip
   // 支持：选中文字工具栏（加粗、斜体、删除线、代码、链接）
   // 支持：ESC 键隐藏、选区消失自动隐藏
+  // 状态：已实现但禁用，需要进一步调试
   ```
 
 - [x] **T2.2.5** 集成代码高亮插件
@@ -634,26 +636,26 @@ ourea/
 
 #### 4.3 代码块增强
 
-- [x] **T4.3.1** 实现代码块语法高亮 (Prism + Shiki)
-  - Markdown 代码块使用 Prism 语法高亮
-  - 非 Markdown 文件使用 Shiki 语法高亮
-  - 支持 40+ 编程语言
-  - 亮色/暗色主题自动切换
+- [x] **T4.3.1** 实现代码块语法高亮 (Prism + Shiki) ✅
+  - [x] Markdown 代码块使用 Prism 语法高亮
+  - [x] 非 Markdown 文件使用 Shiki 语法高亮
+  - [x] 支持 40+ 编程语言
+  - [x] 亮色/暗色主题自动切换
 
-- [x] **T4.3.2** 实现语言选择器
-  - 下拉选择编程语言
+- [ ] **T4.3.2** 实现语言选择器 (暂时禁用 - codeBlockEnhancedPlugin 导致性能问题)
+  - 下拉选择编程语言 (已实现但禁用)
   - ~~自动检测语言~~ (待实现)
   - ~~记住常用语言~~ (待实现)
 
-- [x] **T4.3.3** 实现代码块操作
-  - 一键复制代码
+- [ ] **T4.3.3** 实现代码块操作 (暂时禁用 - codeBlockEnhancedPlugin 导致性能问题)
+  - 一键复制代码 (已实现但禁用)
   - ~~代码折叠~~ (待实现)
   - ~~行号显示切换~~ (待实现)
 
-- [x] **T4.3.4** 实现代码格式化
-  - 集成 Prettier (standalone)
-  - 支持 JS/TS/HTML/CSS/JSON/Markdown 等格式化
-  - 代码块工具栏添加格式化按钮
+- [ ] **T4.3.4** 实现代码格式化 (暂时禁用 - codeBlockEnhancedPlugin 导致性能问题)
+  - 集成 Prettier (standalone) - 已实现
+  - 支持 JS/TS/HTML/CSS/JSON/Markdown 等格式化 - 已实现
+  - 代码块工具栏添加格式化按钮 (已实现但禁用)
 
 #### 4.4 数学公式支持
 
@@ -921,21 +923,22 @@ ourea/
 
 #### 6.4 应用菜单
 
-- [ ] **T6.4.1** 配置 macOS 应用菜单
-  - 文件菜单
-  - 编辑菜单
-  - 格式菜单
-  - 视图菜单
-  - 帮助菜单
+- [x] **T6.4.1** 配置 macOS 应用菜单 ✅
+  - [x] 文件菜单 (New, Open, Save, Save As, Close Tab)
+  - [x] 编辑菜单 (Undo, Redo, Cut, Copy, Paste, Select All, Find, Replace)
+  - ~~格式菜单~~ (合并到编辑菜单)
+  - [x] 视图菜单 (Toggle Sidebar, Toggle Outline, Focus Mode, Fullscreen)
+  - [x] 帮助菜单 (Ourea Help)
+  - [x] Window 菜单 (Minimize, Close Window)
 
 - [ ] **T6.4.2** 配置 Windows 应用菜单
-  - 菜单栏
+  - 菜单栏 (同 macOS，Tauri 跨平台支持)
   - 右键菜单
 
-- [ ] **T6.4.3** 实现菜单命令绑定
-  - 连接菜单项与功能
-  - 快捷键显示
-  - 菜单状态（启用/禁用/选中）
+- [x] **T6.4.3** 实现菜单命令绑定 ✅
+  - [x] 连接菜单项与功能 (useMenuEvents.ts)
+  - [x] 快捷键显示
+  - ~~菜单状态（启用/禁用/选中）~~ (待实现)
 
 ---
 
