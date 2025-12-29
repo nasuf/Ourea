@@ -7,7 +7,7 @@ import CodeEditor from "./CodeEditor.vue";
 
 const tabsStore = useTabsStore();
 const editorRef = ref<HTMLDivElement | null>(null);
-const { isReady, createEditor, setContent, setTabSwitching, executeCommand, insertText } = useMilkdown(editorRef);
+const { isReady, createEditor, destroyEditor, setTabSwitching, executeCommand, insertText } = useMilkdown(editorRef);
 
 // Track current file type
 const isMarkdownMode = computed(() => {
@@ -33,62 +33,47 @@ function handleCodeChange(newContent: string) {
   tabsStore.updateActiveTabContent(newContent);
 }
 
-// Initialize editor when editorRef becomes available and we're in markdown mode
-async function initEditorIfNeeded() {
-  const activeTab = tabsStore.activeTab;
-  if (!activeTab || activeTab.fileType !== "markdown") return;
-  if (!editorRef.value) return;
-  if (isReady.value) return;
+// Watch for editorRef changes (triggered by :key change or component mount)
+watch(editorRef, async (newRef, oldRef) => {
+  // If we had an old ref, destroy the old editor first
+  if (oldRef && isReady.value) {
+    destroyEditor();
+  }
 
-  const initialContent = activeTab.content || "";
-  await createEditor(initialContent);
-  loadedTabId.value = activeTab.id;
-}
+  if (newRef && isMarkdownMode.value) {
+    // New ref means we need to create/recreate the editor
+    setTabSwitching(true);
+    await nextTick();
 
-// Watch for active tab changes
+    const content = tabsStore.activeTab?.content || "";
+    await createEditor(content);
+    loadedTabId.value = tabsStore.activeTabId;
+
+    requestAnimationFrame(() => {
+      setTimeout(() => setTabSwitching(false), 100);
+    });
+  }
+});
+
+// Watch for active tab changes (only for non-markdown files)
 watch(
   () => tabsStore.activeTabId,
   async (newTabId) => {
-    if (!newTabId || newTabId === loadedTabId.value) return;
+    if (!newTabId) return;
 
     const currentTab = tabsStore.activeTab;
     if (!currentTab) return;
 
-    // For markdown files, use Milkdown
-    if (currentTab.fileType === "markdown") {
-      if (isReady.value) {
-        // Editor already exists, just update content
-        setTabSwitching(true);
-        await nextTick();
-        const content = currentTab.content || "";
-        setContent(content, false);
-        loadedTabId.value = newTabId;
-        setTimeout(() => setTabSwitching(false), 300);
-      } else {
-        // Need to create editor - wait for DOM
-        await nextTick();
-        await initEditorIfNeeded();
-      }
-    } else {
-      // For text files, just update loadedTabId
+    // For text files, update loadedTabId - CodeEditor handles content via v-model
+    if (currentTab.fileType !== "markdown") {
       loadedTabId.value = newTabId;
     }
+    // For markdown files, the :key on editorRef handles recreation
   },
   { immediate: true }
 );
 
-// Watch for editorRef becoming available
-watch(editorRef, async (newRef) => {
-  if (newRef && isMarkdownMode.value && !isReady.value) {
-    await initEditorIfNeeded();
-  }
-});
-
 onMounted(async () => {
-  // Small delay to ensure DOM is ready
-  await nextTick();
-  await initEditorIfNeeded();
-
   // Register command handler for global shortcuts
   registerEditorCommandHandler((command: string, payload?: any) => {
     if (isMarkdownMode.value && isReady.value) {
@@ -96,6 +81,7 @@ onMounted(async () => {
     }
     return false;
   });
+  // Editor initialization is handled by the editorRef watch
 });
 
 onUnmounted(() => {
@@ -111,7 +97,7 @@ onUnmounted(() => {
         <div class="loading-spinner"></div>
         <span>Loading editor...</span>
       </div>
-      <div ref="editorRef" class="milkdown-editor"></div>
+      <div ref="editorRef" :key="tabsStore.activeTabId || 'default'" class="milkdown-editor"></div>
     </template>
 
     <!-- Code Editor for non-markdown files -->
@@ -180,7 +166,9 @@ onUnmounted(() => {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
-  min-height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
@@ -194,8 +182,10 @@ onUnmounted(() => {
   font-size: var(--font-size, 16px);
   line-height: var(--line-height, 1.6);
   color: var(--color-text-primary);
-  min-height: 200px;
-  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .milkdown .editor,
@@ -203,11 +193,51 @@ onUnmounted(() => {
   outline: none !important;
   border: none !important;
   box-shadow: none !important;
-  min-height: 200px;
-  height: 100%;
+  flex: 1;
+  position: relative;
 }
 
-/* Headings */
+/* Reset all block elements to ensure proper document flow */
+.milkdown .ProseMirror {
+  display: block;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Ensure block elements are properly positioned */
+.milkdown .ProseMirror > p,
+.milkdown .ProseMirror > h1,
+.milkdown .ProseMirror > h2,
+.milkdown .ProseMirror > h3,
+.milkdown .ProseMirror > h4,
+.milkdown .ProseMirror > h5,
+.milkdown .ProseMirror > h6,
+.milkdown .ProseMirror > ul,
+.milkdown .ProseMirror > ol,
+.milkdown .ProseMirror > blockquote,
+.milkdown .ProseMirror > pre,
+.milkdown .ProseMirror > hr,
+.milkdown .ProseMirror > table,
+.milkdown .ProseMirror > div {
+  display: block;
+  position: relative;
+  z-index: auto;
+  transform: none;
+  float: none;
+  clear: both;
+}
+
+/* Headings - ensure block display */
+.milkdown h1,
+.milkdown h2,
+.milkdown h3,
+.milkdown h4,
+.milkdown h5,
+.milkdown h6 {
+  display: block;
+  width: 100%;
+}
+
 .milkdown h1 {
   font-size: 2em;
   font-weight: 700;
@@ -238,8 +268,10 @@ onUnmounted(() => {
   margin: 1em 0 0.5em;
 }
 
-/* Paragraphs */
+/* Paragraphs - ensure block display */
 .milkdown p {
+  display: block;
+  width: 100%;
   margin: 0.5em 0;
 }
 
@@ -275,6 +307,7 @@ onUnmounted(() => {
   background-color: var(--color-bg-secondary);
   border-radius: 8px;
   padding: 16px;
+  /* padding-top is overridden by prism.css for toolbar space */
   overflow-x: auto;
   margin: 1em 0;
 }

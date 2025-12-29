@@ -161,11 +161,16 @@
   color: #ffab70;
 }
 
-/* Code block toolbar styles */
-.milkdown pre[class*="language-"] {
+/* Code block toolbar styles - temporarily disabled */
+/*
+.milkdown pre {
   position: relative;
+}
+
+.milkdown pre.has-toolbar {
   padding-top: 2.5em !important;
 }
+*/
 
 .code-block-toolbar {
   position: absolute;

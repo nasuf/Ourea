@@ -21,13 +21,13 @@ import { cursor } from "@milkdown/kit/plugin/cursor";
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener";
 import { indent } from "@milkdown/kit/plugin/indent";
 import { replaceAll } from "@milkdown/kit/utils";
-import { block } from "@milkdown/plugin-block";
+// import { block } from "@milkdown/plugin-block";
 import { prism, prismConfig } from "@milkdown/plugin-prism";
 import { refractor } from "refractor/all";
 import { useTabsStore } from "@/stores/tabs";
 import { useEditorStore } from "@/stores/editor";
 import { imageUploadPlugin } from "@/plugins/imagePlugin";
-import { codeBlockEnhancedPlugin } from "@/plugins/codeBlockPlugin";
+// import { codeBlockEnhancedPlugin } from "@/plugins/codeBlockPlugin";
 import { mathPlugin } from "@/plugins/mathPlugin";
 import { tableEnhancedPlugin } from "@/plugins/tablePlugin";
 import { searchHighlightPlugin } from "@/plugins/searchHighlightPlugin";
@@ -143,8 +143,8 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
       editor.value.destroy();
     }
 
-    // Create custom tooltip
-    createCustomTooltip();
+    // Create custom tooltip - disabled for debugging
+    // createCustomTooltip();
 
     // Setup keyboard handler for ESC
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -173,9 +173,10 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
           ctx.set(rootCtx, containerRef.value!);
           ctx.set(defaultValueCtx, content);
 
-          ctx.set(prismConfig.key, {
-            configureRefractor: () => refractor,
-          });
+          // Prism config disabled since prism plugin is disabled
+          // ctx.set(prismConfig.key, {
+          //   configureRefractor: () => refractor,
+          // });
 
           const listenerCtxValue = ctx.get(listenerCtx);
 
@@ -185,41 +186,9 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
             }
           });
 
-          listenerCtxValue.updated((ctx, doc) => {
-            // Update tooltip on any editor update
-            updateTooltipPosition();
-
-            try {
-              const view = ctx.get(editorViewCtx);
-              if (view && view.state) {
-                const { from } = view.state.selection;
-                let line = 1;
-                let column = 1;
-                let pos = 0;
-
-                doc.descendants((node, nodePos) => {
-                  if (nodePos >= from) return false;
-                  if (node.isBlock && nodePos > 0) {
-                    line++;
-                    column = 1;
-                  }
-                  if (node.isText) {
-                    const textLen = node.text?.length || 0;
-                    if (nodePos + textLen >= from) {
-                      column = from - nodePos + 1;
-                      return false;
-                    }
-                    column += textLen;
-                  }
-                  pos = nodePos + node.nodeSize;
-                  return true;
-                });
-
-                editorStore.setCursorPosition(Math.max(1, line), Math.max(1, column));
-              }
-            } catch {
-              // Ignore errors
-            }
+          // Simplified listener - removed complex document traversal to debug rendering
+          listenerCtxValue.updated(() => {
+            // Disabled for debugging
           });
         })
         .use(commonmark)
@@ -229,18 +198,19 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
         .use(cursor)
         .use(listener)
         .use(indent)
-        .use(block)
-        .use(prism)
-        .use(imageUploadPlugin)
-        .use(codeBlockEnhancedPlugin)
-        .use(mathPlugin)
-        .use(tableEnhancedPlugin)
-        .use(searchHighlightPlugin)
+        // .use(block) // Temporarily disabled - may cause rendering issues
+        // .use(prism) // Temporarily disabled to debug rendering
+        // Temporarily disabled ALL custom plugins to debug rendering issue
+        // .use(imageUploadPlugin)
+        // .use(codeBlockEnhancedPlugin)
+        // .use(mathPlugin)
+        // .use(tableEnhancedPlugin)
+        // .use(searchHighlightPlugin)
         .create();
 
-      // Add event listeners to editor container
-      containerRef.value?.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("selectionchange", handleSelectionChange);
+      // Add event listeners to editor container - temporarily disabled to debug
+      // containerRef.value?.addEventListener("mouseup", handleMouseUp);
+      // document.addEventListener("selectionchange", handleSelectionChange);
 
       // Store cleanup function reference for destroyEditor
       cleanupFn = () => {
@@ -267,25 +237,73 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
       editor.value = null;
       isReady.value = false;
     }
+    // Clear the container DOM to ensure clean state for next editor
+    if (containerRef.value) {
+      containerRef.value.innerHTML = "";
+    }
   }
 
   function setContent(content: string, markAsChange: boolean = true) {
-    if (!editor.value) return;
+    if (!editor.value) {
+      console.warn("setContent called but editor is not ready");
+      return;
+    }
 
     if (!markAsChange) {
       isUpdatingFromExternal.value = true;
     }
 
     try {
+      // Ensure content is a valid string with at least a newline
       const safeContent = content || "\n";
-      editor.value.action(replaceAll(safeContent));
+
+      // Use replaceAll to replace the entire document content
+      const success = editor.value.action(replaceAll(safeContent));
+
+      if (!success) {
+        console.warn("replaceAll returned false, trying alternative method");
+        // Alternative: use editor action to get view and replace content directly
+        editor.value.action((ctx) => {
+          try {
+            const view = ctx.get(editorViewCtx);
+            if (view) {
+              // Parse the markdown content to ProseMirror document
+              const { state } = view;
+              const { tr } = state;
+
+              // Delete all content and insert new
+              tr.delete(0, state.doc.content.size);
+              view.dispatch(tr);
+
+              // Now use replaceAll again after clearing
+              editor.value?.action(replaceAll(safeContent));
+            }
+          } catch (err) {
+            console.error("Alternative content replacement failed:", err);
+          }
+        });
+      }
+
+      // Force a view update to ensure the content is rendered
+      editor.value.action((ctx) => {
+        try {
+          const view = ctx.get(editorViewCtx);
+          if (view) {
+            // Focus the editor to ensure it's updated
+            view.focus();
+          }
+        } catch {
+          // Ignore focus errors
+        }
+      });
     } catch (e) {
       console.error("Failed to set content:", e);
     } finally {
       if (!markAsChange) {
+        // Use a slightly longer timeout to ensure content is fully updated
         setTimeout(() => {
           isUpdatingFromExternal.value = false;
-        }, 300);
+        }, 200);
       }
     }
   }
