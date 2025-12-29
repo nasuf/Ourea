@@ -173,10 +173,10 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
           ctx.set(rootCtx, containerRef.value!);
           ctx.set(defaultValueCtx, content);
 
-          // Prism config disabled since prism plugin is disabled
-          // ctx.set(prismConfig.key, {
-          //   configureRefractor: () => refractor,
-          // });
+          // Prism config for syntax highlighting
+          ctx.set(prismConfig.key, {
+            configureRefractor: () => refractor,
+          });
 
           const listenerCtxValue = ctx.get(listenerCtx);
 
@@ -198,14 +198,13 @@ export function useMilkdown(containerRef: ReturnType<typeof ref<HTMLElement | nu
         .use(cursor)
         .use(listener)
         .use(indent)
-        // .use(block) // Temporarily disabled - may cause rendering issues
-        // .use(prism) // Temporarily disabled to debug rendering
-        // Temporarily disabled ALL custom plugins to debug rendering issue
-        // .use(imageUploadPlugin)
-        // .use(codeBlockEnhancedPlugin)
-        // .use(mathPlugin)
-        // .use(tableEnhancedPlugin)
-        // .use(searchHighlightPlugin)
+        // .use(block) // Disabled - can cause rendering issues
+        .use(prism)
+        .use(imageUploadPlugin)
+        // .use(codeBlockEnhancedPlugin) // Disabled - causes performance issues
+        .use(mathPlugin)
+        .use(tableEnhancedPlugin)
+        .use(searchHighlightPlugin)
         .create();
 
       // Add event listeners to editor container - temporarily disabled to debug
