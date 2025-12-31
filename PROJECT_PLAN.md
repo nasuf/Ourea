@@ -787,17 +787,17 @@ ourea/
   Cmd/Ctrl + 1-6    标题 1-6
   ```
 
-- [x] **T5.2.5** 实现视图快捷键 (部分完成)
+- [x] **T5.2.5** 实现视图快捷键
   ```
   Cmd/Ctrl + \    切换侧边栏
-  ~~Cmd/Ctrl + Shift + L    切换目录~~ (待实现)
+  Cmd/Ctrl + Shift + O    切换目录（与菜单一致）
   Cmd/Ctrl + +    放大字体
   Cmd/Ctrl + -    缩小字体
   Cmd/Ctrl + 0    重置字体
-  ~~F11    全屏~~ (待实现)
+  F11 (Windows/Linux) / Cmd+Ctrl+F (macOS)    全屏
   ```
 
-- [ ] **T5.2.6** 实现快捷键自定义（可选）
+- [ ] **T5.2.6** 实现快捷键自定义（可选，延后）
   - 快捷键设置面板
   - 自定义绑定
   - 重置默认
@@ -840,22 +840,30 @@ ourea/
   - 专注模式、打字机模式、段落聚焦设置
   - 段落聚焦透明度调节
 
-- [ ] **T5.4.4** 实现图片设置
-  - 图片存储位置
-  - 图片命名规则
-  - 图片压缩选项
+- [x] **T5.4.4** 实现图片设置 ✅
+  - [x] 图片存储位置选项（相对路径、assets 子目录、绝对路径）
+  - [x] 图片命名规则（原名、时间戳、UUID）
+  - [x] 图片设置 UI 面板
 
 - [x] **T5.4.5** 实现文件设置 ✅
   - 文件编码（显示 UTF-8，暂不可配置）
   - 换行符类型（自动检测，暂不可配置）
 
-- [ ] **T5.4.6** 实现 Rust 配置持久化
+- [x] **T5.4.6** 实现 Rust 配置持久化 ✅
   ```rust
   // 使用 serde 序列化配置
   // 存储到用户数据目录
-  // ~/.config/ourea/settings.json (macOS/Linux)
+  // ~/Library/Application Support/com.ourea.app/settings.json (macOS)
+  // ~/.config/ourea/settings.json (Linux)
   // %APPDATA%/ourea/settings.json (Windows)
   ```
+  - [x] Rust 后端：commands/settings.rs
+    - get_settings_path() - 获取配置文件路径
+    - load_settings() - 加载配置
+    - save_settings() - 保存配置
+  - [x] 前端：集成设置加载和保存
+    - 应用启动时加载设置
+    - 设置变更时自动保存
 
 ---
 

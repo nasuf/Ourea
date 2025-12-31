@@ -43,7 +43,9 @@ export function useMenuEvents() {
       case "toggle_focus":
         settingsStore.toggleFocusMode();
         break;
-      // toggle_outline is handled in MainLayout via provide/inject
+      case "toggle_outline":
+        settingsStore.toggleOutline();
+        break;
       default:
         console.log("Unhandled menu event:", menuId);
     }

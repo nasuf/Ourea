@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, onUnmounted } from "vue";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
+import { dirname, join } from "@tauri-apps/api/path";
 import TitleBar from "./TitleBar.vue";
 import Sidebar from "./Sidebar.vue";
 import Outline from "./Outline.vue";
@@ -69,6 +72,96 @@ function closeImageManager() {
   isImageManagerVisible.value = false;
 }
 
+// Handle image insertion from toolbar button
+async function handleInsertImage() {
+  try {
+    // Open file dialog to select image
+    const selected = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "Images",
+          extensions: ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"],
+        },
+      ],
+    });
+
+    if (!selected) return; // User cancelled
+
+    const imagePath = selected as string;
+    const currentFilePath = tabsStore.activeTab?.filePath;
+
+    // Get image settings from store
+    const storageLocation = settingsStore.imageStorageLocation;
+    const namingRule = settingsStore.imageNamingRule;
+    const assetsFolder = settingsStore.imageAssetsFolder || "assets";
+
+    let relativePath: string;
+
+    if (currentFilePath) {
+      // Generate filename based on naming rule
+      const ext = imagePath.split(".").pop() || "png";
+      const originalName = imagePath.split("/").pop()?.replace(/\.[^.]+$/, "") || "image";
+      let filename: string;
+
+      switch (namingRule) {
+        case "original":
+          filename = `${originalName}.${ext}`;
+          break;
+        case "uuid":
+          filename = `${crypto.randomUUID()}.${ext}`;
+          break;
+        case "timestamp":
+        default:
+          const now = new Date();
+          const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+          filename = `${timestamp}.${ext}`;
+          break;
+      }
+
+      // Determine destination path based on storage location setting
+      const dir = await dirname(currentFilePath);
+      let destPath: string;
+
+      switch (storageLocation) {
+        case "assets":
+          const assetsDir = await join(dir, assetsFolder);
+          destPath = await join(assetsDir, filename);
+          relativePath = `./${assetsFolder}/${filename}`;
+          break;
+        case "absolute":
+          destPath = imagePath; // Use original path
+          relativePath = imagePath;
+          break;
+        case "relative":
+        default:
+          destPath = await join(dir, filename);
+          relativePath = `./${filename}`;
+          break;
+      }
+
+      // Copy image to destination (unless using absolute path)
+      if (storageLocation !== "absolute") {
+        await invoke("copy_image", {
+          source: imagePath,
+          destination: destPath,
+        });
+      }
+    } else {
+      // No file saved yet, use absolute path
+      relativePath = imagePath;
+    }
+
+    // Insert image into editor
+    if (editorRef.value) {
+      const imageMarkdown = `![image](${relativePath})`;
+      editorRef.value.insertText(imageMarkdown);
+    }
+  } catch (error) {
+    console.error("Failed to insert image:", error);
+  }
+}
+
 // Settings dialog state - use store for global access
 function openSettings() {
   settingsStore.openSettingsDialog();
@@ -129,8 +222,6 @@ function handleReplaceAll(replacement: string) {
 
 const sidebarVisible = ref(true);
 const sidebarWidth = ref(250);
-const outlineVisible = ref(true);
-const outlineWidth = ref(400);
 const isDragging = ref(false);
 
 const hasOpenTabs = computed(() => tabsStore.tabs.length > 0);
@@ -139,8 +230,10 @@ const toggleSidebar = () => {
   sidebarVisible.value = !sidebarVisible.value;
 };
 
+// Use store for outline state
+const outlineVisible = computed(() => settingsStore.outlineVisible);
 const toggleOutline = () => {
-  outlineVisible.value = !outlineVisible.value;
+  settingsStore.toggleOutline();
 };
 
 // Provide outline state to TitleBar
@@ -164,6 +257,11 @@ function handleToolbarCommand(command: string, payload?: any) {
     return;
   }
 
+  if (command === "insertImage") {
+    handleInsertImage();
+    return;
+  }
+
   if (editorRef.value) {
     editorRef.value.executeCommand(command, payload);
   }
@@ -173,7 +271,6 @@ function handleToolbarCommand(command: string, payload?: any) {
 let unlistenDrop: UnlistenFn | null = null;
 let unlistenHover: UnlistenFn | null = null;
 let unlistenCancel: UnlistenFn | null = null;
-let unlistenMenuEvent: UnlistenFn | null = null;
 
 // Supported text file extensions
 const TEXT_EXTENSIONS = new Set([
@@ -232,19 +329,13 @@ onMounted(async () => {
     isDragging.value = false;
   });
 
-  // Listen for menu events that need local state access
-  unlistenMenuEvent = await listen<string>("menu-event", (event) => {
-    if (event.payload === "toggle_outline") {
-      toggleOutline();
-    }
-  });
+  // Menu events are now handled globally in useMenuEvents
 });
 
 onUnmounted(() => {
   if (unlistenDrop) unlistenDrop();
   if (unlistenHover) unlistenHover();
   if (unlistenCancel) unlistenCancel();
-  if (unlistenMenuEvent) unlistenMenuEvent();
 });
 </script>
 
@@ -272,7 +363,7 @@ onUnmounted(() => {
 
       <Outline
         v-if="hasOpenTabs && outlineVisible && !settingsStore.focusMode"
-        v-model:width="outlineWidth"
+        v-model:width="settingsStore.outlineWidth"
       />
     </div>
 

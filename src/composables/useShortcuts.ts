@@ -1,4 +1,5 @@
 import { onMounted, onUnmounted } from "vue";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useFile } from "./useFile";
 import { useSettingsStore } from "@/stores/settings";
 import { useGlobalSearch } from "./useSearch";
@@ -21,6 +22,13 @@ export function useShortcuts() {
 
   // Detect platform
   const isMac = navigator.platform.toLowerCase().includes("mac");
+
+  // Toggle fullscreen
+  async function toggleFullscreen() {
+    const window = getCurrentWindow();
+    const isFullscreen = await window.isFullscreen();
+    await window.setFullscreen(!isFullscreen);
+  }
 
   // Define shortcuts
   const shortcuts: ShortcutHandler[] = [
@@ -71,6 +79,14 @@ export function useShortcuts() {
       description: "Toggle Sidebar",
     },
     {
+      key: "o",
+      meta: isMac,
+      ctrl: !isMac,
+      shift: true,
+      handler: () => settingsStore.toggleOutline(),
+      description: "Toggle Outline",
+    },
+    {
       key: "=",
       meta: isMac,
       ctrl: !isMac,
@@ -91,6 +107,24 @@ export function useShortcuts() {
       handler: () => settingsStore.setFontSize(16),
       description: "Reset Font Size",
     },
+    // Fullscreen: F11 on Windows/Linux, Cmd+Ctrl+F on macOS
+    ...(isMac
+      ? [
+          {
+            key: "f",
+            meta: true,
+            ctrl: true,
+            handler: () => toggleFullscreen(),
+            description: "Toggle Fullscreen",
+          },
+        ]
+      : [
+          {
+            key: "F11",
+            handler: () => toggleFullscreen(),
+            description: "Toggle Fullscreen",
+          },
+        ]),
 
     // Search
     {

@@ -147,6 +147,9 @@ pub fn run() {
             commands::watcher::start_watching,
             commands::watcher::stop_watching,
             commands::watcher::stop_all_watching,
+            commands::settings::load_settings,
+            commands::settings::save_settings,
+            commands::settings::get_settings_file_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

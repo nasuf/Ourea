@@ -14,7 +14,7 @@ const emit = defineEmits<{
 const settingsStore = useSettingsStore();
 
 // Active tab
-type SettingsTab = "appearance" | "editor" | "files";
+type SettingsTab = "appearance" | "editor" | "files" | "images";
 const activeTab = ref<SettingsTab>("appearance");
 
 // Search query
@@ -25,6 +25,7 @@ const tabs = [
   { id: "appearance" as const, label: "Appearance", icon: "palette" },
   { id: "editor" as const, label: "Editor", icon: "edit" },
   { id: "files" as const, label: "Files", icon: "folder" },
+  { id: "images" as const, label: "Images", icon: "image" },
 ];
 
 // Filter tabs based on search query
@@ -64,6 +65,12 @@ function getTabSettings(tabId: SettingsTab) {
         { label: "Default Save Location" },
         { label: "File Encoding" },
         { label: "Line Endings" },
+      ];
+    case "images":
+      return [
+        { label: "Image Storage Location" },
+        { label: "Image Naming Rule" },
+        { label: "Assets Folder Name" },
       ];
     default:
       return [];
@@ -111,6 +118,20 @@ const lineEndingOptions = [
   { value: "lf", label: "LF (Unix/macOS)" },
   { value: "crlf", label: "CRLF (Windows)" },
   { value: "auto", label: "Auto Detect" },
+];
+
+// Image storage location options
+const imageStorageOptions = [
+  { value: "relative", label: "Same directory as file" },
+  { value: "assets", label: "Assets subfolder" },
+  { value: "absolute", label: "Custom absolute path" },
+];
+
+// Image naming rule options
+const imageNamingOptions = [
+  { value: "original", label: "Keep original name" },
+  { value: "timestamp", label: "Timestamp (YYYYMMDD_HHmmss)" },
+  { value: "uuid", label: "UUID" },
 ];
 
 // Auto save interval options (in seconds)
@@ -177,6 +198,10 @@ function resetToDefaults() {
   settingsStore.typewriterMode = false;
   settingsStore.paragraphFocus = false;
   settingsStore.paragraphFocusOpacity = 0.3;
+  // Image settings
+  settingsStore.imageStorageLocation = "relative";
+  settingsStore.imageNamingRule = "timestamp";
+  settingsStore.imageAssetsFolder = "assets";
 
   // Sync local state
   localFontSize.value = 16;
@@ -532,6 +557,56 @@ onUnmounted(() => {
                 <p class="setting-description">Auto-detected based on file content</p>
               </div>
             </div>
+
+            <!-- Images Tab -->
+            <div v-if="activeTab === 'images'" class="settings-section">
+              <div class="setting-group">
+                <label class="setting-label">Image Storage Location</label>
+                <div class="setting-control">
+                  <select
+                    :value="settingsStore.imageStorageLocation"
+                    class="setting-select"
+                    @change="settingsStore.imageStorageLocation = ($event.target as HTMLSelectElement).value as 'relative' | 'assets' | 'absolute'"
+                  >
+                    <option v-for="opt in imageStorageOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <p class="setting-description">Where to save pasted or dragged images</p>
+              </div>
+
+              <div v-if="settingsStore.imageStorageLocation === 'assets'" class="setting-group">
+                <label class="setting-label">Assets Folder Name</label>
+                <div class="setting-control">
+                  <input
+                    type="text"
+                    :value="settingsStore.imageAssetsFolder"
+                    class="setting-input"
+                    placeholder="assets"
+                    @input="settingsStore.imageAssetsFolder = ($event.target as HTMLInputElement).value"
+                    @keydown.stop
+                  />
+                </div>
+                <p class="setting-description">Subfolder name for storing images (relative to file)</p>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-label">Image Naming Rule</label>
+                <div class="setting-control">
+                  <select
+                    :value="settingsStore.imageNamingRule"
+                    class="setting-select"
+                    @change="settingsStore.imageNamingRule = ($event.target as HTMLSelectElement).value as 'original' | 'timestamp' | 'uuid'"
+                  >
+                    <option v-for="opt in imageNamingOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <p class="setting-description">How to name saved images</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -739,6 +814,26 @@ onUnmounted(() => {
 .setting-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.setting-input {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 13px;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  min-width: 180px;
+  outline: none;
+}
+
+.setting-input:focus {
+  border-color: var(--color-accent);
+}
+
+.setting-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
 }
 
 .range-control {
